@@ -11,16 +11,13 @@ void main() async {
   Connection connection = Connection();
   connection.connect();
 
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => HomeModel(),
-      child: MyApp(),
-    )
-  );
+  runApp(ChangeNotifierProvider(
+    create: (context) => HomeModel(),
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -45,4 +42,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

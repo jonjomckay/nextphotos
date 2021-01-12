@@ -34,8 +34,8 @@ class _PhotoPageState extends State<PhotoPage> {
 
   void onPageChanged(int index) {
     context.read<HomeModel>().getPhoto(widget.photos[index]).then((value) => setState(() {
-      photo = value;
-    }));
+          photo = value;
+        }));
   }
 
   @override
@@ -97,35 +97,34 @@ class _PhotoPageState extends State<PhotoPage> {
         builder: (context, index) {
           // var photo = widget.photos[index];
           return PhotoViewGalleryPageOptions.customChild(
-            child: FutureBuilder<Photo>(
-              future: context.read<HomeModel>().getPhoto(widget.photos[index]),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Container();
-                }
+              child: FutureBuilder<Photo>(
+            future: context.read<HomeModel>().getPhoto(widget.photos[index]),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Container();
+              }
 
-                var photo = snapshot.data;
+              var photo = snapshot.data;
 
-                return CachedNetworkImage(
-                  imageUrl: 'https://${widget.hostname}/remote.php/dav${photo.path}',
-                  httpHeaders: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'},
-                  progressIndicatorBuilder: (context, url, progress) {
-                    return Stack(
-                      children: [
-                        SpinKitPulse(
-                          color: Theme.of(context).primaryColorLight,
-                          size: 50.0,
-                        ),
-                        LinearProgressIndicator(
-                          value: progress.progress,
-                        )
-                      ],
-                    );
-                  },
-                );
-              },
-            )
-          );
+              return CachedNetworkImage(
+                imageUrl: 'https://${widget.hostname}/remote.php/dav${photo.path}',
+                httpHeaders: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'},
+                progressIndicatorBuilder: (context, url, progress) {
+                  return Stack(
+                    children: [
+                      SpinKitPulse(
+                        color: Theme.of(context).primaryColorLight,
+                        size: 50.0,
+                      ),
+                      LinearProgressIndicator(
+                        value: progress.progress,
+                      )
+                    ],
+                  );
+                },
+              );
+            },
+          ));
         },
         itemCount: widget.photos.length,
       )),

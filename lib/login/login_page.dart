@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nextcloud/nextcloud.dart';
-import 'package:nextphotos/home/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -74,11 +73,7 @@ class _LoginPageState extends State<LoginPage> {
     if (_init == null) {
       child = Container();
     } else {
-      child = WebView(
-          userAgent: 'Nextphotos',
-          initialUrl: _init.login,
-          javascriptMode: JavascriptMode.unrestricted
-      );
+      child = WebView(userAgent: 'Nextphotos', initialUrl: _init.login, javascriptMode: JavascriptMode.unrestricted);
     }
 
     return Scaffold(

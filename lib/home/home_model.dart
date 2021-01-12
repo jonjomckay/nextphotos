@@ -21,13 +21,12 @@ class HomeModel extends ChangeNotifier {
   Future<List<SearchLocation>> listLocations() async {
     final Database db = await Connection.database;
 
-    var results = await db.rawQuery('SELECT COUNT(*) AS count, l.name, l.lat, l.lng FROM locations l LEFT JOIN photos p ON l.id = p.location_id GROUP BY l.id');
-
+    var results = await db.rawQuery(
+        'SELECT COUNT(*) AS count, l.name, l.lat, l.lng FROM locations l LEFT JOIN photos p ON l.id = p.location_id GROUP BY l.id');
 
     return results.map((e) {
       return SearchLocation(e['count'], e['name'], e['lat'], e['lng']);
-    })
-        .toList();
+    }).toList();
   }
 
   Future<List<String>> listPhotoIds() async {
@@ -35,9 +34,7 @@ class HomeModel extends ChangeNotifier {
 
     var result = await db.rawQuery('SELECT id FROM photos ORDER BY modified_at DESC');
 
-    return result
-        .map((e) => e['id'] as String)
-        .toList();
+    return result.map((e) => e['id'] as String).toList();
   }
 
   Future<Photo> getPhoto(String id) async {
@@ -47,20 +44,17 @@ class HomeModel extends ChangeNotifier {
 
     return Photo(
       id: result.first['id'],
-      modifiedAt:
-      DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
+      modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
       name: result.first['name'],
       path: result.first['path'],
-      scannedAt:
-      DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
+      scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
     );
   }
 
   Future<void> clearOldPhotos(DateTime scannedAt) async {
     final Database db = await Connection.database;
 
-    var count = await db.delete('photos',
-        where: 'scanned_at < ?', whereArgs: [scannedAt.millisecondsSinceEpoch]);
+    var count = await db.delete('photos', where: 'scanned_at < ?', whereArgs: [scannedAt.millisecondsSinceEpoch]);
 
     log('Cleared up $count old photos');
   }
@@ -93,11 +87,7 @@ class HomeModel extends ChangeNotifier {
       locations.add('$approxLat,$approxLng', photo.id);
 
       // TODO: Stop using path as an identifier and use fileId everywhere
-      batch.rawUpdate('UPDATE photos SET lat = ?, lng = ? WHERE id = ?', [
-        photo.lat,
-        photo.lng,
-        photo.id
-      ]);
+      batch.rawUpdate('UPDATE photos SET lat = ?, lng = ? WHERE id = ?', [photo.lat, photo.lng, photo.id]);
       // TODO: Fix this inconsistent path bollocks
     }
 
@@ -115,26 +105,16 @@ class HomeModel extends ChangeNotifier {
 
       for (var address in addresses) {
         if (address.locality != null) {
-          db.rawInsert('INSERT OR IGNORE INTO locations (lat, lng, name, country) VALUES (?, ?, ?, ?)', [
-            address.coordinates.latitude,
-            address.coordinates.longitude,
-            address.locality,
-            address.countryCode
-          ]);
+          db.rawInsert('INSERT OR IGNORE INTO locations (lat, lng, name, country) VALUES (?, ?, ?, ?)',
+              [address.coordinates.latitude, address.coordinates.longitude, address.locality, address.countryCode]);
 
-          var result = await db.rawQuery('SELECT id FROM locations WHERE lat = ? AND lng = ?', [
-            address.coordinates.latitude,
-            address.coordinates.longitude
-          ]);
+          var result = await db.rawQuery('SELECT id FROM locations WHERE lat = ? AND lng = ?',
+              [address.coordinates.latitude, address.coordinates.longitude]);
 
-          var photoParameters = List<String>
-              .generate(photos.length, (index) => '?')
-              .join(', ');
+          var photoParameters = List<String>.generate(photos.length, (index) => '?').join(', ');
 
-          await db.rawUpdate('UPDATE photos SET location_id = ? WHERE id IN ($photoParameters)', [
-            result.first['id'],
-            ...values
-          ]);
+          await db.rawUpdate(
+              'UPDATE photos SET location_id = ? WHERE id IN ($photoParameters)', [result.first['id'], ...values]);
 
           break;
         }
@@ -167,8 +147,7 @@ class HomeModel extends ChangeNotifier {
     while (hasMore) {
       log('Loading offset $offset');
 
-      var result = await otherClient
-          .search('/files/$username', limit, offset, propFilters, props: props);
+      var result = await otherClient.search('/files/$username', limit, offset, propFilters, props: props);
 
       var photos = result.map((f) => Photo(
           id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),

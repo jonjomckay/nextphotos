@@ -21,7 +21,6 @@ class Connection {
         'ALTER TABLE photos ADD COLUMN location_id INTEGER',
       ];
 
-
       final config = MigrationConfig(initializationScript: initialScript, migrationScripts: migrations);
       final path = join(await getDatabasesPath(), 'nextphotos.db');
 

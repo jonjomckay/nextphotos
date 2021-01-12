@@ -12,7 +12,6 @@ import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/login/login_page.dart';
 import 'package:nextphotos/photo/photo_page.dart';
 import 'package:nextphotos/search/search_location.dart';
-import 'package:nextphotos/search/search_page.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:progressive_image/progressive_image.dart';
 import 'package:provider/provider.dart';
@@ -40,7 +39,13 @@ class Pic extends StatelessWidget {
     return GestureDetector(
         onTap: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return PhotoPage(photos: photos, photo: photo, index: index, hostname: hostname, username: username, authorization: authorization);
+            return PhotoPage(
+                photos: photos,
+                photo: photo,
+                index: index,
+                hostname: hostname,
+                username: username,
+                authorization: authorization);
           }));
         },
         child: ProgressiveImage(
@@ -166,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                 var locations = UnmodifiableListView(snapshot.data);
 
                 return Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
@@ -180,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                           height: 260.0,
                           child: ListView.separated(
                             physics: PageScrollPhysics(),
-                            separatorBuilder:  (context, index) => Divider(),
+                            separatorBuilder: (context, index) => Divider(),
                             scrollDirection: Axis.horizontal,
                             clipBehavior: Clip.none,
                             itemCount: locations.length,
@@ -190,8 +195,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                         )
                       ],
-                    )
-                );
+                    ));
             }
           },
         );
@@ -230,12 +234,11 @@ class _HomePageState extends State<HomePage> {
                 var client = NextCloudClient.withoutLogin(_hostname);
 
                 client.login.initLoginFlow().then((init) {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => LoginPage(client: client, init: init)));
+                  Navigator.push(
+                      context, MaterialPageRoute(builder: (context) => LoginPage(client: client, init: init)));
                 }).catchError((e) {
                   // TODO
                 });
-
-
               },
             )
           ],
@@ -271,18 +274,9 @@ class _HomePageState extends State<HomePage> {
             });
           },
           items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_library),
-              label: 'Library'
-            ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.mood),
-                label: 'For You'
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_album),
-              label: 'Albums'
-            ),
+            BottomNavigationBarItem(icon: Icon(Icons.photo_library), label: 'Library'),
+            BottomNavigationBarItem(icon: Icon(Icons.mood), label: 'For You'),
+            BottomNavigationBarItem(icon: Icon(Icons.photo_album), label: 'Albums'),
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Search',
@@ -320,7 +314,9 @@ class _HomePageState extends State<HomePage> {
         width: 180,
         child: Column(
           children: [
-            CachedNetworkImage(imageUrl: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
+            CachedNetworkImage(
+                imageUrl:
+                    'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
             ListTile(
               title: Text(location.name),
               subtitle: Text(

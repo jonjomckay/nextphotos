@@ -8,8 +8,7 @@ import 'package:nextcloud/nextcloud.dart';
 
 /// TODO: Cache these images: https://pub.dev/packages/cached_network_image
 class NextCloudImage extends ImageProvider<NextCloudImage> {
-  const NextCloudImage(this.client, this.uri, this.width, this.height,
-      {this.scale = 1.0})
+  const NextCloudImage(this.client, this.uri, this.width, this.height, {this.scale = 1.0})
       : assert(uri != null),
         assert(scale != null);
 
@@ -24,8 +23,7 @@ class NextCloudImage extends ImageProvider<NextCloudImage> {
     // Ownership of this controller is handed off to [_loadAsync]; it is that
     // method's responsibility to close the controller's stream when the image
     // has been loaded or an error is thrown.
-    final StreamController<ImageChunkEvent> chunkEvents =
-    StreamController<ImageChunkEvent>();
+    final StreamController<ImageChunkEvent> chunkEvents = StreamController<ImageChunkEvent>();
 
     return MultiFrameImageStreamCompleter(
       codec: _loadAsync(decode),

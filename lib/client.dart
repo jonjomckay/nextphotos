@@ -32,17 +32,11 @@ class CustomClient {
   };
 
   Future<List<NextcloudMapPhoto>> photos() async {
-    final response = await _network.send(
-      'GET',
-      '$_baseUrl/apps/maps/photos',
-      [200]
-    );
-    
+    final response = await _network.send('GET', '$_baseUrl/apps/maps/photos', [200]);
+
     var result = jsonDecode(response.body) as List<dynamic>;
 
-    return result
-        .map((e) => NextcloudMapPhoto.fromJson(e))
-        .toList();
+    return result.map((e) => NextcloudMapPhoto.fromJson(e)).toList();
   }
 
   Future<List<WebDavFile>> search(
@@ -99,12 +93,12 @@ class CustomClient {
                     })
                     ..element('d:eq', nest: () {
                       builder
-                          ..element('d:prop', nest: () {
-                            builder.element('oc:owner-id');
-                          })
-                          ..element('d:literal', nest: () {
-                            builder.text(_username);
-                          });
+                        ..element('d:prop', nest: () {
+                          builder.element('oc:owner-id');
+                        })
+                        ..element('d:literal', nest: () {
+                          builder.text(_username);
+                        });
                     });
                 });
               })
@@ -152,8 +146,7 @@ class HttpClient extends http.BaseClient {
   final http.BaseClient _client;
 
   @override
-  Future<http.StreamedResponse> send(http.BaseRequest request) =>
-      _client.send(request);
+  Future<http.StreamedResponse> send(http.BaseRequest request) => _client.send(request);
 }
 
 /// Http client with the correct authentication and header
@@ -167,8 +160,7 @@ class NextCloudHttpClient extends HttpClient {
     this.password, {
     inner,
     this.useJson = false,
-  })  : _authString =
-            'Basic ${base64.encode(utf8.encode('$username:$password')).trim()}',
+  })  : _authString = 'Basic ${base64.encode(utf8.encode('$username:$password')).trim()}',
         _inner = inner ?? HttpClient();
 
   /// The username to be used for all requests

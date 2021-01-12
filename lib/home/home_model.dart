@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
 import 'package:geocoder/geocoder.dart';
+import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/photo.dart';
 import 'package:nextphotos/nextcloud/map_photo.dart';
@@ -136,63 +137,62 @@ class HomeModel extends ChangeNotifier {
   void refreshPhotos(hostname, username, password) async {
     var otherClient = CustomClient('https://$hostname', username, password);
 
-    // var propFilters = [
-    //   MapEntry(WebDavProps.davContentType, 'image/png'),
-    //   MapEntry(WebDavProps.davContentType, 'image/jpeg'),
-    //   MapEntry(WebDavProps.davContentType, 'image/heic'),
-    // ];
-    //
-    // var props = {
-    //   'oc:fileid',
-    //   WebDavProps.davLastModified,
-    //   WebDavProps.ocFavorite,
-    // };
-    //
-    // var hasMore = true;
-    // var limit = 250;
-    // var offset = 0;
-    // var total = 0;
-    //
-    // var scannedAt = DateTime.now();
-    //
-    // while (hasMore) {
-    //   log('Loading offset $offset');
-    //
-    //   var result = await otherClient
-    //       .search('/files/$username', limit, offset, propFilters, props: props);
-    //
-    //   var photos = result.map((f) => Photo(
-    //       id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),
-    //       modifiedAt: f.lastModified,
-    //       name: f.name,
-    //       path: f.path,
-    //       scannedAt: scannedAt));
-    //
-    //   await insertPhotos(photos);
-    //
-    //   offset = offset + limit;
-    //   total = total + photos.length;
-    //
-    //   // _photos.addAll(photos);
-    //
-    //   notifyListeners();
-    //
-    //   if (result.length < limit) {
-    //     hasMore = false;
-    //   }
-    // }
-    //
-    // log('Loading complete with ${total} items');
-    // log('Clearing old items');
-    //
-    // await clearOldPhotos(scannedAt);
-    //
-    // notifyListeners();
+    var propFilters = [
+      MapEntry(WebDavProps.davContentType, 'image/png'),
+      MapEntry(WebDavProps.davContentType, 'image/jpeg'),
+      MapEntry(WebDavProps.davContentType, 'image/heic'),
+    ];
+
+    var props = {
+      'oc:fileid',
+      WebDavProps.davLastModified,
+      WebDavProps.ocFavorite,
+    };
+
+    var hasMore = true;
+    var limit = 250;
+    var offset = 0;
+    var total = 0;
+
+    var scannedAt = DateTime.now();
+
+    while (hasMore) {
+      log('Loading offset $offset');
+
+      var result = await otherClient
+          .search('/files/$username', limit, offset, propFilters, props: props);
+
+      var photos = result.map((f) => Photo(
+          id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),
+          modifiedAt: f.lastModified,
+          name: f.name,
+          path: f.path,
+          scannedAt: scannedAt));
+
+      await insertPhotos(photos);
+
+      offset = offset + limit;
+      total = total + photos.length;
+
+      // _photos.addAll(photos);
+
+      notifyListeners();
+
+      if (result.length < limit) {
+        hasMore = false;
+      }
+    }
+
+    log('Loading complete with ${total} items');
+    log('Clearing old items');
+
+    await clearOldPhotos(scannedAt);
+
+    notifyListeners();
 
     // Load the map data for any photos we have
     var a = await otherClient.photos();
 
     await updatePhotosWithLocations(a);
-
   }
 }

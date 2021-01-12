@@ -20,49 +20,37 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Pic extends StatelessWidget {
-  Pic(this.hostname, this.username, this.authorization, this.photos, this.index);
+  Pic(this.hostname, this.username, this.authorization, this.photos, this.photo, this.index);
 
   final String hostname;
   final String username;
   final String authorization;
-  final List<Photo> photos;
+  final List<String> photos;
+  final Photo photo;
   final int index;
 
   @override
   Widget build(BuildContext context) {
-    var photo = photos[index];
+    var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/$username', ''));
 
-    var actualPath = Uri.decodeFull(photo.path
-        .replaceFirst('/files/$username', ''));
-
-    var thumb = CachedNetworkImageProvider(
-        'https://$hostname/index.php/apps/files/api/v1/thumbnail/32/32$actualPath',
-        headers: {'Authorization': authorization, 'OCS-APIRequest': 'true'},
-        imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
-
-    var image = CachedNetworkImageProvider(
-        'https://$hostname/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
+    var image = CachedNetworkImageProvider('https://$hostname/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
         headers: {'Authorization': authorization, 'OCS-APIRequest': 'true'},
         imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return PhotoPage(photos: photos, index: index, hostname: hostname, username: username, authorization: authorization);
-        }));
-      },
-
-      child: ProgressiveImage(
-        placeholder: AssetImage('assets/images/placeholder.png'),
-        // thumbnail: NextCloudImage(client, actualPath, 32, 32),
-        // image: NextCloudImage(client, actualPath, 256, 256),
-        thumbnail: thumb,
-        image: image,
-        height: 256,
-        width: 256,
-        fit: BoxFit.cover,
-      )
-    );
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return PhotoPage(photos: photos, photo: photo, index: index, hostname: hostname, username: username, authorization: authorization);
+          }));
+        },
+        child: ProgressiveImage(
+          placeholder: AssetImage('assets/images/placeholder.png'),
+          thumbnail: image,
+          image: image,
+          height: 256,
+          width: 256,
+          fit: BoxFit.cover,
+        ));
   }
 }
 
@@ -83,10 +71,10 @@ class _HomePageState extends State<HomePage> {
   String _password;
   String _authorization;
   int _currentPage;
+  List<String> _ids = [];
 
   ScrollController _scrollController = ScrollController();
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   // void _onRefresh() async {
   //   await fetchPhotos();
@@ -106,6 +94,9 @@ class _HomePageState extends State<HomePage> {
         _authorization = prefs.getString('nextcloud.authorizationHeader');
       });
 
+      context.read<HomeModel>().listPhotoIds().then((ids) => setState(() {
+            _ids = ids;
+          }));
       context.read<HomeModel>().refreshPhotos(_hostname, _username, _password);
     });
   }
@@ -130,42 +121,34 @@ class _HomePageState extends State<HomePage> {
 
     var libraryPage = Center(child: Consumer<HomeModel>(
       builder: (context, model, child) {
-        return FutureBuilder<List<Photo>>(
-          future: model.listPhotos(),
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              default:
-                if (snapshot.hasError) {
-                  return Text('Oops: ${snapshot.error}');
-                }
+        return DraggableScrollbar.rrect(
+            controller: _scrollController,
+            child: GridView.builder(
+                controller: _scrollController,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, crossAxisSpacing: 3, mainAxisSpacing: 3),
+                itemCount: _ids.length,
+                itemBuilder: (BuildContext context, int index) {
+                  var id = _ids[index];
 
-                if (!snapshot.hasData) {
-                  return Text('No data yet');
-                }
+                  return FutureBuilder<Photo>(
+                    future: model.getPhoto(id),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        default:
+                          if (!snapshot.hasData) {
+                            return Image(image: AssetImage('assets/images/placeholder.png'));
+                          }
 
-                var photos = UnmodifiableListView(snapshot.data);
-
-                return DraggableScrollbar.rrect(
-                    controller: _scrollController,
-                    child: GridView.builder(
-                        controller: _scrollController,
-                        gridDelegate:
-                        SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: 3,
-                            mainAxisSpacing: 3),
-                        itemCount: photos.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Pic(_hostname, _username, _authorization, photos, index);
-                        }));
-            }
-          },
-        );
+                          return Pic(_hostname, _username, _authorization, _ids, snapshot.data, index);
+                      }
+                    },
+                  );
+                }));
       },
     ));
 
-    var searchPage = Container(
-        child: Consumer<HomeModel>(
+    var searchPage = Container(child: Consumer<HomeModel>(
       builder: (context, model, child) {
         var places = FutureBuilder<List<SearchLocation>>(
           future: model.listLocations(),

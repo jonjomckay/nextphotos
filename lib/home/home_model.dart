@@ -30,22 +30,30 @@ class HomeModel extends ChangeNotifier {
         .toList();
   }
 
-  Future<List<Photo>> listPhotos() async {
+  Future<List<String>> listPhotoIds() async {
     final Database db = await Connection.database;
 
-    var results = await db.query('photos', orderBy: 'modified_at DESC');
+    var result = await db.rawQuery('SELECT id FROM photos ORDER BY modified_at DESC');
 
-    return List.generate(results.length, (index) {
-      return Photo(
-        id: results[index]['id'],
-        modifiedAt:
-            DateTime.fromMillisecondsSinceEpoch(results[index]['modified_at']),
-        name: results[index]['name'],
-        path: results[index]['path'],
-        scannedAt:
-            DateTime.fromMillisecondsSinceEpoch(results[index]['scanned_at']),
-      );
-    });
+    return result
+        .map((e) => e['id'] as String)
+        .toList();
+  }
+
+  Future<Photo> getPhoto(String id) async {
+    final Database db = await Connection.database;
+
+    var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
+
+    return Photo(
+      id: result.first['id'],
+      modifiedAt:
+      DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
+      name: result.first['name'],
+      path: result.first['path'],
+      scannedAt:
+      DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
+    );
   }
 
   Future<void> clearOldPhotos(DateTime scannedAt) async {

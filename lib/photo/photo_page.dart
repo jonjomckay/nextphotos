@@ -1,21 +1,21 @@
-import 'dart:developer';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/database/photo.dart';
-import 'package:photo_view/photo_view.dart';
+import 'package:nextphotos/home/home_model.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:provider/provider.dart';
 
 class PhotoPage extends StatefulWidget {
-  PhotoPage({Key key, this.hostname, this.username, this.authorization, this.photos, this.index})
+  PhotoPage({Key key, this.hostname, this.username, this.authorization, this.photos, this.photo, this.index})
       : pageController = PageController(initialPage: index);
 
   final String hostname;
   final String username;
   final String authorization;
-  final List<Photo> photos;
+  final List<String> photos;
+  final Photo photo;
   final int index;
   final PageController pageController;
 
@@ -29,13 +29,13 @@ class _PhotoPageState extends State<PhotoPage> {
   @override
   void initState() {
     super.initState();
-    photo = widget.photos[widget.index];
+    photo = widget.photo;
   }
 
   void onPageChanged(int index) {
-    setState(() {
-      photo = widget.photos[index];
-    });
+    context.read<HomeModel>().getPhoto(widget.photos[index]).then((value) => setState(() {
+      photo = value;
+    }));
   }
 
   @override
@@ -87,7 +87,6 @@ class _PhotoPageState extends State<PhotoPage> {
             color: Theme.of(context).primaryColorLight,
             size: 50.0,
           );
-          // return Loading(indicator: BallSpinFadeLoaderIndicator(), size: 48.0, color: Theme.of(context).primaryColorLight);
         },
         backgroundDecoration: BoxDecoration(
           color: Colors.black,
@@ -96,31 +95,36 @@ class _PhotoPageState extends State<PhotoPage> {
         onPageChanged: onPageChanged,
         scrollDirection: Axis.horizontal,
         builder: (context, index) {
-          var photo = widget.photos[index];
-          var image = CachedNetworkImageProvider('https://${widget.hostname}/remote.php/dav${photo.path}',
-              headers: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'});
+          // var photo = widget.photos[index];
+          return PhotoViewGalleryPageOptions.customChild(
+            child: FutureBuilder<Photo>(
+              future: context.read<HomeModel>().getPhoto(widget.photos[index]),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container();
+                }
 
-          return PhotoViewGalleryPageOptions.customChild(child: CachedNetworkImage(
-              imageUrl: 'https://${widget.hostname}/remote.php/dav${photo.path}',
-              httpHeaders: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'},
-            progressIndicatorBuilder: (context, url, progress) {
-                return Stack(
-                  children: [
-                    SpinKitPulse(
-                      color: Theme.of(context).primaryColorLight,
-                      size: 50.0,
-                    ),
-                    LinearProgressIndicator(
-                      value: progress.progress,
-                    )
-                  ],
+                var photo = snapshot.data;
+
+                return CachedNetworkImage(
+                  imageUrl: 'https://${widget.hostname}/remote.php/dav${photo.path}',
+                  httpHeaders: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'},
+                  progressIndicatorBuilder: (context, url, progress) {
+                    return Stack(
+                      children: [
+                        SpinKitPulse(
+                          color: Theme.of(context).primaryColorLight,
+                          size: 50.0,
+                        ),
+                        LinearProgressIndicator(
+                          value: progress.progress,
+                        )
+                      ],
+                    );
+                  },
                 );
-            },
-          ));
-
-          return PhotoViewGalleryPageOptions(
-            imageProvider: image,
-            minScale: PhotoViewComputedScale.contained,
+              },
+            )
           );
         },
         itemCount: widget.photos.length,

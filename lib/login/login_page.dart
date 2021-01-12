@@ -9,6 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class LoginPage extends StatefulWidget {
+  static String route = '/login';
+
   final NextCloudClient client;
   final LoginFlowInit init;
 
@@ -49,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
 
           prefs.setString("nextcloud.authorizationHeader", authorizationHeader);
 
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+          Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
         });
       }).catchError((e) {
         // TODO
@@ -75,15 +77,13 @@ class _LoginPageState extends State<LoginPage> {
       child = WebView(
           userAgent: 'Nextphotos',
           initialUrl: _init.login,
-          javascriptMode: JavascriptMode.unrestricted,
-          onWebViewCreated: (WebViewController webViewController) {
-            webViewController.loadUrl(_init.login, headers: <String, String>{"OCS-APIREQUEST": "true"});
-          });
+          javascriptMode: JavascriptMode.unrestricted
+      );
     }
 
     return Scaffold(
         appBar: AppBar(
-          title: Text("Sign in..."),
+          title: Text('Log in'),
         ),
         body: child);
   }

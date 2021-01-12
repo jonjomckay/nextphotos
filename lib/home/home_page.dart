@@ -1,4 +1,3 @@
-
 import 'dart:collection';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -68,6 +67,8 @@ class Pic extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
+  static String route = '/';
+
   HomePage({Key key}) : super(key: key);
 
   @override

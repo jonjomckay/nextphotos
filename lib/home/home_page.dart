@@ -10,54 +10,14 @@ import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/photo.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/login/login_page.dart';
-import 'package:nextphotos/photo/photo_page.dart';
+import 'package:nextphotos/nextcloud/image.dart';
+import 'package:nextphotos/photo/photo_list.dart';
 import 'package:nextphotos/search/search_location.dart';
+import 'package:nextphotos/search/search_screen.dart';
 import 'package:nextphotos/settings/settings_page.dart';
-import 'package:progressive_image/progressive_image.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class Pic extends StatelessWidget {
-  Pic(this.hostname, this.username, this.authorization, this.photos, this.photo, this.index);
-
-  final String hostname;
-  final String username;
-  final String authorization;
-  final List<String> photos;
-  final Photo photo;
-  final int index;
-
-  @override
-  Widget build(BuildContext context) {
-    var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/$username', ''));
-
-    var image = CachedNetworkImageProvider('https://$hostname/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
-        headers: {'Authorization': authorization, 'OCS-APIRequest': 'true'},
-        imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
-
-    return GestureDetector(
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return PhotoPage(
-                photos: photos,
-                photo: photo,
-                index: index,
-                hostname: hostname,
-                username: username,
-                authorization: authorization);
-          }));
-        },
-        child: ProgressiveImage(
-          placeholder: AssetImage('assets/images/placeholder.png'),
-          thumbnail: image,
-          image: image,
-          height: 256,
-          width: 256,
-          fit: BoxFit.cover,
-        ));
-  }
-}
 
 class HomePage extends StatefulWidget {
   static String route = '/';
@@ -78,7 +38,6 @@ class _HomePageState extends State<HomePage> {
   int _currentPage;
   List<String> _ids = [];
 
-  ScrollController _scrollController = ScrollController();
   RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   // void _onRefresh() async {
@@ -124,92 +83,11 @@ class _HomePageState extends State<HomePage> {
     //     onLoading: _onRefresh,
     // );
 
-    var libraryPage = Center(child: Consumer<HomeModel>(
-      builder: (context, model, child) {
-        return DraggableScrollbar.rrect(
-            controller: _scrollController,
-            child: GridView.builder(
-                controller: _scrollController,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, crossAxisSpacing: 3, mainAxisSpacing: 3),
-                itemCount: _ids.length,
-                itemBuilder: (BuildContext context, int index) {
-                  var id = _ids[index];
+    var libraryPage = Center(
+      child: PhotoList(ids: _ids, hostname: _hostname, username: _username, authorization: _authorization)
+    );
 
-                  return FutureBuilder<Photo>(
-                    future: model.getPhoto(id),
-                    builder: (context, snapshot) {
-                      switch (snapshot.connectionState) {
-                        default:
-                          if (!snapshot.hasData) {
-                            return Image(image: AssetImage('assets/images/placeholder.png'));
-                          }
-
-                          return Pic(_hostname, _username, _authorization, _ids, snapshot.data, index);
-                      }
-                    },
-                  );
-                }));
-      },
-    ));
-
-    var searchPage = Container(child: Consumer<HomeModel>(
-      builder: (context, model, child) {
-        var places = FutureBuilder<List<SearchLocation>>(
-          future: model.listLocations(),
-          builder: (context, snapshot) {
-            switch (snapshot.connectionState) {
-              default:
-                if (snapshot.hasError) {
-                  return Text('Oops: ${snapshot.error}');
-                }
-
-                if (!snapshot.hasData) {
-                  return Text('No data yet');
-                }
-
-                var locations = UnmodifiableListView(snapshot.data);
-
-                return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                          child: Text('Places', style: Theme.of(context).textTheme.headline6),
-                        ),
-                        SizedBox(
-                          // TODO: you may want to use an aspect ratio here for tablet support
-                          height: 260.0,
-                          child: ListView.separated(
-                            physics: PageScrollPhysics(),
-                            separatorBuilder: (context, index) => Divider(),
-                            scrollDirection: Axis.horizontal,
-                            clipBehavior: Clip.none,
-                            itemCount: locations.length,
-                            itemBuilder: (BuildContext context, int itemIndex) {
-                              return _buildCarouselItem(context, locations[itemIndex]);
-                            },
-                          ),
-                        )
-                      ],
-                    ));
-            }
-          },
-        );
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            places,
-            places,
-            // places
-          ],
-        );
-      },
-    ));
+    var searchPage = SearchScreen();
 
     Widget child;
     if (_password == null) {
@@ -286,47 +164,5 @@ class _HomePageState extends State<HomePage> {
         body: child);
   }
 
-  Widget _buildCarouselItem(BuildContext context, SearchLocation location) {
-    // return Container(
-    //   width: 260,
-    //   child: Card(
-    //       clipBehavior: Clip.antiAlias,
-    //       child: Stack(
-    //         children: [
-    //           ColorFiltered(
-    //             colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.7), BlendMode.dstATop),
-    //             child: CachedNetworkImage(imageUrl: 'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
-    //           ),
-    //           Container(
-    //             child: Center(
-    //               child: Text(location.name, textAlign: TextAlign.center),
-    //             ),
-    //             width: double.infinity,
-    //           )
-    //         ],
-    //       )
-    //   ),
-    // );
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Container(
-        width: 180,
-        child: Column(
-          children: [
-            CachedNetworkImage(
-                imageUrl:
-                    'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
-            ListTile(
-              title: Text(location.name),
-              subtitle: Text(
-                '${location.count} ${Intl.plural(location.count, one: 'photo', other: 'photos')}',
-                style: Theme.of(context).textTheme.caption,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

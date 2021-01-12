@@ -2,13 +2,58 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nextcloud/nextcloud.dart';
+import 'package:nextphotos/database/photo.dart';
+import 'package:nextphotos/photo/photo_page.dart';
+import 'package:progressive_image/progressive_image.dart';
+
+class Pic extends StatelessWidget {
+  Pic(this.hostname, this.username, this.authorization, this.photos, this.photo, this.index);
+
+  final String hostname;
+  final String username;
+  final String authorization;
+  final List<String> photos;
+  final Photo photo;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/$username', ''));
+
+    var image = CachedNetworkImageProvider('https://$hostname/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
+        headers: {'Authorization': authorization, 'OCS-APIRequest': 'true'},
+        imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
+
+    return GestureDetector(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return PhotoPage(
+                photos: photos,
+                photo: photo,
+                index: index,
+                hostname: hostname,
+                username: username,
+                authorization: authorization);
+          }));
+        },
+        child: ProgressiveImage(
+          placeholder: AssetImage('assets/images/placeholder.png'),
+          thumbnail: image,
+          image: image,
+          height: 256,
+          width: 256,
+          fit: BoxFit.cover,
+        ));
+  }
+}
 
 /// TODO: Cache these images: https://pub.dev/packages/cached_network_image
-class NextCloudImage extends ImageProvider<NextCloudImage> {
-  const NextCloudImage(this.client, this.uri, this.width, this.height, {this.scale = 1.0})
+class NextCloudImageProvider extends ImageProvider<NextCloudImageProvider> {
+  const NextCloudImageProvider(this.client, this.uri, this.width, this.height, {this.scale = 1.0})
       : assert(uri != null),
         assert(scale != null);
 
@@ -19,7 +64,7 @@ class NextCloudImage extends ImageProvider<NextCloudImage> {
   final double scale;
 
   @override
-  ImageStreamCompleter load(NextCloudImage key, DecoderCallback decode) {
+  ImageStreamCompleter load(NextCloudImageProvider key, DecoderCallback decode) {
     // Ownership of this controller is handed off to [_loadAsync]; it is that
     // method's responsibility to close the controller's stream when the image
     // has been loaded or an error is thrown.
@@ -34,8 +79,8 @@ class NextCloudImage extends ImageProvider<NextCloudImage> {
   }
 
   @override
-  Future<NextCloudImage> obtainKey(ImageConfiguration configuration) {
-    return SynchronousFuture<NextCloudImage>(this);
+  Future<NextCloudImageProvider> obtainKey(ImageConfiguration configuration) {
+    return SynchronousFuture<NextCloudImageProvider>(this);
   }
 
   Future<Codec> _loadAsync(DecoderCallback decode) async {

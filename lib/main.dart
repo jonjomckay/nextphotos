@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/home/home_model.dart';
+import 'package:nextphotos/login/login_page.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home/home_page.dart';
 
@@ -9,15 +11,28 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   Connection connection = Connection();
-  connection.connect();
+  connection.migrate();
+
+  Widget child;
+
+  var prefs = await SharedPreferences.getInstance();
+  if (prefs.containsKey('nextcloud.appPassword')) {
+    child = HomePage();
+  } else {
+    child = LoginPage();
+  }
 
   runApp(ChangeNotifierProvider(
     create: (context) => HomeModel(),
-    child: MyApp(),
+    child: MyApp(child),
   ));
 }
 
 class MyApp extends StatelessWidget {
+  final Widget child;
+
+  MyApp(this.child);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,7 +53,7 @@ class MyApp extends StatelessWidget {
       ),
       // themeMode: ThemeMode.system,
       themeMode: ThemeMode.system,
-      home: HomePage(),
+      home: child,
     );
   }
 }

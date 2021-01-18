@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:nextphotos/home/home_page.dart';
+import 'package:nextphotos/login/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -30,7 +30,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     prefs.remove('nextcloud.appPassword');
                     prefs.remove('nextcloud.authorizationHeader');
 
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomePage()));
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
                   });
                 },
                 child: Text('Submit'),

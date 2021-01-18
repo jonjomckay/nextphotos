@@ -9,7 +9,16 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  final _formKey = GlobalKey<FormState>();
+  void onTapLogout() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('nextcloud.hostname');
+      prefs.remove('nextcloud.username');
+      prefs.remove('nextcloud.appPassword');
+      prefs.remove('nextcloud.authorizationHeader');
+
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => LoginPage()), (r) => false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,25 +26,15 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: Text('Settings'),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Form(
-            key: _formKey,
-            child: Column(children: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  SharedPreferences.getInstance().then((prefs) {
-                    prefs.remove('nextcloud.hostname');
-                    prefs.remove('nextcloud.username');
-                    prefs.remove('nextcloud.appPassword');
-                    prefs.remove('nextcloud.authorizationHeader');
-
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginPage()));
-                  });
-                },
-                child: Text('Submit'),
-              )
-            ])),
+      body: ListView(
+        children: [
+          ListTile(
+            title: Text('Logout'),
+            subtitle: Text('Log out of your Nextcloud server'),
+            leading: const Icon(Icons.logout, color: Colors.red),
+            onTap: onTapLogout,
+          )
+        ],
       ),
     );
   }

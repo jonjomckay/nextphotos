@@ -5,27 +5,33 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/search/search_location.dart';
+import 'package:nextphotos/search/search_place_page.dart';
 import 'package:provider/provider.dart';
 
 class SearchScreen extends StatelessWidget {
   Widget _buildCarouselItem(BuildContext context, SearchLocation location) {
     return Card(
       clipBehavior: Clip.antiAlias,
-      child: Container(
-        width: 180,
-        child: Column(
-          children: [
-            CachedNetworkImage(
-                imageUrl:
-                'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
-            ListTile(
-              title: Text(location.name),
-              subtitle: Text(
-                '${location.count} ${Intl.plural(location.count, one: 'photo', other: 'photos')}',
-                style: Theme.of(context).textTheme.caption,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => SearchPlacePage(searchLocation: location)));
+        },
+        child: Container(
+          width: 180,
+          child: Column(
+            children: [
+              CachedNetworkImage(
+                  imageUrl:
+                  'https://api.mapbox.com/styles/v1/mapbox/outdoors-v11/static/${location.lng},${location.lat},10,0/300x300?access_token=pk.eyJ1Ijoiam9uam9tY2theSIsImEiOiJja2p1NHU5ZTcwYm9wMnFvNWJwbnhieWc4In0.lUbmCfnLIOsijQsKpe2u0Q'),
+              ListTile(
+                title: Text(location.name),
+                subtitle: Text(
+                  '${location.count} ${Intl.plural(location.count, one: 'photo', other: 'photos')}',
+                  style: Theme.of(context).textTheme.caption,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

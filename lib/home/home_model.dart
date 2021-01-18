@@ -16,21 +16,46 @@ import '../client.dart';
 class HomeModel extends ChangeNotifier {
   final List<Photo> _photos = [];
 
+  String _hostname;
+  String _username;
+  String _password;
+  String _authorization;
+
+  String get hostname => _hostname;
+  String get username => _username;
+  String get password => _password;
+  String get authorization => _authorization;
+
   UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
 
+  void setSettings(String hostname, String username, String password, String authorization) {
+    _hostname = hostname;
+    _username = username;
+    _password = password;
+    _authorization = authorization;
+  }
+
+  Future<List<String>> listLocationPhotoIds(int id) async {
+    final Database db = await Connection.readOnly();
+
+    var result = await db.query('photos', where: 'location_id = ?', whereArgs: [id], orderBy: 'modified_at DESC');
+
+    return result.map((e) => e['id'] as String).toList();
+  }
+
   Future<List<SearchLocation>> listLocations() async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.readOnly();
 
     var results = await db.rawQuery(
-        'SELECT COUNT(*) AS count, l.name, l.lat, l.lng FROM locations l LEFT JOIN photos p ON l.id = p.location_id GROUP BY l.id');
+        'SELECT COUNT(*) AS count, l.id, l.name, l.lat, l.lng FROM locations l LEFT JOIN photos p ON l.id = p.location_id GROUP BY l.id');
 
     return results.map((e) {
-      return SearchLocation(e['count'], e['name'], e['lat'], e['lng']);
+      return SearchLocation(e['id'], e['count'], e['name'], e['lat'], e['lng']);
     }).toList();
   }
 
   Future<List<String>> listPhotoIds() async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.readOnly();
 
     var result = await db.rawQuery('SELECT id FROM photos ORDER BY modified_at DESC');
 
@@ -38,7 +63,7 @@ class HomeModel extends ChangeNotifier {
   }
 
   Future<Photo> getPhoto(String id) async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.readOnly();
 
     var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
 
@@ -52,7 +77,7 @@ class HomeModel extends ChangeNotifier {
   }
 
   Future<void> clearOldPhotos(DateTime scannedAt) async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.writable();
 
     var count = await db.delete('photos', where: 'scanned_at < ?', whereArgs: [scannedAt.millisecondsSinceEpoch]);
 
@@ -60,7 +85,7 @@ class HomeModel extends ChangeNotifier {
   }
 
   Future<void> insertPhotos(Iterable<Photo> photos) async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.writable();
 
     Batch batch = db.batch();
 
@@ -74,7 +99,7 @@ class HomeModel extends ChangeNotifier {
   }
 
   Future<void> updatePhotosWithLocations(Iterable<NextcloudMapPhoto> photos) async {
-    final Database db = await Connection.database;
+    final Database db = await Connection.writable();
 
     Batch batch = db.batch();
 
@@ -122,8 +147,8 @@ class HomeModel extends ChangeNotifier {
     });
   }
 
-  void refreshPhotos(hostname, username, password) async {
-    var otherClient = CustomClient('https://$hostname', username, password);
+  void refreshPhotos() async {
+    var otherClient = CustomClient('https://$_hostname', _username, _password);
 
     var propFilters = [
       MapEntry(WebDavProps.davContentType, 'image/png'),
@@ -147,7 +172,7 @@ class HomeModel extends ChangeNotifier {
     while (hasMore) {
       log('Loading offset $offset');
 
-      var result = await otherClient.search('/files/$username', limit, offset, propFilters, props: props);
+      var result = await otherClient.search('/files/$_username', limit, offset, propFilters, props: props);
 
       var photos = result.map((f) => Photo(
           id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),

@@ -7,47 +7,48 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/photo.dart';
+import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_page.dart';
 import 'package:progressive_image/progressive_image.dart';
+import 'package:provider/provider.dart';
 
 class Pic extends StatelessWidget {
-  Pic(this.hostname, this.username, this.authorization, this.photos, this.photo, this.index);
+  Pic(this.photos, this.photo, this.index);
 
-  final String hostname;
-  final String username;
-  final String authorization;
   final List<String> photos;
   final Photo photo;
   final int index;
 
   @override
   Widget build(BuildContext context) {
-    var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/$username', ''));
+    return Consumer<HomeModel>(
+      builder: (context, model, child) {
+        var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/${model.username}', ''));
 
-    var image = CachedNetworkImageProvider('https://$hostname/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
-        headers: {'Authorization': authorization, 'OCS-APIRequest': 'true'},
-        imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
+        var image = CachedNetworkImageProvider('https://${model.hostname}/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
+            headers: {'Authorization': model.authorization, 'OCS-APIRequest': 'true'},
+            imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
 
-    return GestureDetector(
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return PhotoPage(
-                photos: photos,
-                photo: photo,
-                index: index,
-                hostname: hostname,
-                username: username,
-                authorization: authorization);
-          }));
-        },
-        child: ProgressiveImage(
-          placeholder: AssetImage('assets/images/placeholder.png'),
-          thumbnail: image,
-          image: image,
-          height: 256,
-          width: 256,
-          fit: BoxFit.cover,
-        ));
+        return GestureDetector(
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return PhotoPage(
+                    photos: photos,
+                    photo: photo,
+                    index: index
+                );
+              }));
+            },
+            child: ProgressiveImage(
+              placeholder: AssetImage('assets/images/placeholder.png'),
+              thumbnail: image,
+              image: image,
+              height: 256,
+              width: 256,
+              fit: BoxFit.cover,
+            ));
+      },
+    );
   }
 }
 

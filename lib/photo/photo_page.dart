@@ -8,12 +8,9 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 
 class PhotoPage extends StatefulWidget {
-  PhotoPage({Key key, this.hostname, this.username, this.authorization, this.photos, this.photo, this.index})
+  PhotoPage({Key key, this.photos, this.photo, this.index})
       : pageController = PageController(initialPage: index);
 
-  final String hostname;
-  final String username;
-  final String authorization;
   final List<String> photos;
   final Photo photo;
   final int index;
@@ -97,34 +94,38 @@ class _PhotoPageState extends State<PhotoPage> {
         builder: (context, index) {
           // var photo = widget.photos[index];
           return PhotoViewGalleryPageOptions.customChild(
-              child: FutureBuilder<Photo>(
-            future: context.read<HomeModel>().getPhoto(widget.photos[index]),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) {
-                return Container();
-              }
+            child: Consumer<HomeModel>(
+              builder: (context, model, child) {
+                return FutureBuilder<Photo>(
+                  future: model.getPhoto(widget.photos[index]),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container();
+                    }
 
-              var photo = snapshot.data;
+                    var photo = snapshot.data;
 
-              return CachedNetworkImage(
-                imageUrl: 'https://${widget.hostname}/remote.php/dav${photo.path}',
-                httpHeaders: {'Authorization': widget.authorization, 'OCS-APIRequest': 'true'},
-                progressIndicatorBuilder: (context, url, progress) {
-                  return Stack(
-                    children: [
-                      SpinKitPulse(
-                        color: Theme.of(context).primaryColorLight,
-                        size: 50.0,
-                      ),
-                      LinearProgressIndicator(
-                        value: progress.progress,
-                      )
-                    ],
-                  );
-                },
-              );
-            },
-          ));
+                    return CachedNetworkImage(
+                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo.path}',
+                      httpHeaders: {'Authorization': model.authorization, 'OCS-APIRequest': 'true'},
+                      progressIndicatorBuilder: (context, url, progress) {
+                        return Stack(
+                          children: [
+                            SpinKitPulse(
+                              color: Theme.of(context).primaryColorLight,
+                              size: 50.0,
+                            ),
+                            LinearProgressIndicator(
+                              value: progress.progress,
+                            )
+                          ],
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ));
         },
         itemCount: widget.photos.length,
       )),

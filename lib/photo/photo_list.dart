@@ -9,11 +9,8 @@ class PhotoList extends StatelessWidget {
   ScrollController _scrollController = ScrollController();
 
   final List<String> ids;
-  final String hostname;
-  final String username;
-  final String authorization;
 
-  PhotoList({Key key, this.ids, this.hostname, this.username, this.authorization}) : super(key: key);
+  PhotoList({Key key, this.ids}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +35,7 @@ class PhotoList extends StatelessWidget {
                             return Image(image: AssetImage('assets/images/placeholder.png'));
                           }
 
-                          return Pic(hostname, username, authorization, ids, snapshot.data, index);
+                          return Pic(ids, snapshot.data, index);
                       }
                     },
                   );

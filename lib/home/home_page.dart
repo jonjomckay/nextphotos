@@ -5,6 +5,7 @@ import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/search/search_screen.dart';
 import 'package:nextphotos/settings/settings_page.dart';
+import 'package:nextphotos/ui/animated_indexed_stack.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -40,20 +41,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child;
-    if (_currentPage == 0) {
-      child = LibraryScreen();
-    } else if (_currentPage == 1) {
-      child = Text('Page does not exist');
-    } else if (_currentPage == 2) {
-      child = Text('Page does not exist');
-    } else {
-      child = SearchScreen();
-    }
-
     return Scaffold(
         appBar: AppBar(
-          title: Text('Nextphotos'),
           actions: [
             IconButton(
               icon: const Icon(Icons.settings),
@@ -82,7 +71,15 @@ class _HomePageState extends State<HomePage> {
             )
           ],
         ),
-        body: child);
+        body: AnimatedIndexedStack(
+          index: _currentPage,
+          children: [
+            LibraryScreen(),
+            Text('Page does not exist'),
+            Text('Page does not exist'),
+            SearchScreen()
+          ],
+        ));
   }
 
 }

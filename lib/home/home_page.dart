@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nextphotos/albums/albums_screen.dart';
+import 'package:nextphotos/for_you/for_you_screen.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/search/search_screen.dart';
@@ -75,8 +77,8 @@ class _HomePageState extends State<HomePage> {
           index: _currentPage,
           children: [
             LibraryScreen(),
-            Text('Page does not exist'),
-            Text('Page does not exist'),
+            ForYouScreen(),
+            AlbumsScreen(),
             SearchScreen()
           ],
         ));

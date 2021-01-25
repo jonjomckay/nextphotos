@@ -147,7 +147,7 @@ class HomeModel extends ChangeNotifier {
     });
   }
 
-  void refreshPhotos() async {
+  void refreshPhotos(Function(String message) onMessage) async {
     var otherClient = CustomClient('https://$_hostname', _username, _password);
 
     var propFilters = [
@@ -169,9 +169,9 @@ class HomeModel extends ChangeNotifier {
 
     var scannedAt = DateTime.now();
 
-    while (hasMore) {
-      log('Loading offset $offset');
+    onMessage('Synchronising photos...');
 
+    while (hasMore) {
       var result = await otherClient.search('/files/$_username', limit, offset, propFilters, props: props);
 
       var photos = result.map((f) => Photo(
@@ -193,9 +193,13 @@ class HomeModel extends ChangeNotifier {
       if (result.length < limit) {
         hasMore = false;
       }
+
+      onMessage('Synchronised $total photos');
     }
 
-    log('Loading complete with ${total} items');
+    var totalTime = DateTime.now().difference(scannedAt);
+
+    onMessage('Finished synchronising $total photos in ${totalTime.inSeconds} seconds');
     log('Clearing old items');
 
     await clearOldPhotos(scannedAt);

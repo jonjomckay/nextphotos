@@ -22,7 +22,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
     var model = context.read<HomeModel>();
 
     model.listPhotoIds().then((ids) => setState(() => _ids = ids));
-    model.refreshPhotos();
   }
 
   @override

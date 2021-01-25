@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -24,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   Future<SharedPreferences> _preferences = SharedPreferences.getInstance();
 
   int _currentPage;
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -32,18 +35,30 @@ class _HomePageState extends State<HomePage> {
     _currentPage = 0;
 
     _preferences.then((prefs) {
-      context.read<HomeModel>().setSettings(
+      var model = context.read<HomeModel>();
+
+      model.setSettings(
           prefs.getString('nextcloud.hostname'),
           prefs.getString('nextcloud.username'),
           prefs.getString('nextcloud.appPassword'),
           prefs.getString('nextcloud.authorizationHeader')
       );
+
+      model.refreshPhotos((message) {
+        log(message);
+
+        _scaffoldKey.currentState.hideCurrentSnackBar();
+        _scaffoldKey.currentState.showSnackBar(SnackBar(
+          content: Text(message),
+        ));
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
         appBar: AppBar(
           actions: [
             IconButton(

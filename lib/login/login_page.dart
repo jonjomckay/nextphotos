@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -89,7 +90,7 @@ class _LoginPageState extends State<LoginPage> {
             RaisedButton(
               child: Text('Login'),
               onPressed: () async {
-                var client = NextCloudClient.withoutLogin(_hostname);
+                var client = NextCloudClient.withoutLogin(Uri(host: _hostname));
 
                 client.login.initLoginFlow().then((init) {
                   setState(() {
@@ -98,6 +99,7 @@ class _LoginPageState extends State<LoginPage> {
                   });
                 }).catchError((e) {
                   // TODO
+                  log(e.toString());
                 });
               },
             )

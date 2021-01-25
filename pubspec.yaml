@@ -36,10 +36,7 @@ dependencies:
   flutter_spinkit: "^4.1.2"
   geocoder: ^0.2.1
   lazy_load_scrollview: 1.2.0
-  nextcloud:
-    git:
-      ref: feature/notifications
-      url: https://github.com/Viktoriaschule/dart-nextcloud.git
+  nextcloud: ^2.1.2
   photo_view: ^0.10.3
   progressive_image: ^1.0.1
   pull_to_refresh: ^1.6.3
@@ -47,11 +44,6 @@ dependencies:
   shared_preferences: ^0.5.12+4
   sqflite_migration: ^0.2.0
   webview_flutter: ^1.0.7
-
-  # TODO: Here because we're using the Git version of nextcloud
-  crypto: ">=2.0.0 <3.0.0"
-  crypton: ">=1.1.0 <2.0.0"
-  browser_launcher: ">=0.1.0 <0.2.0"
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

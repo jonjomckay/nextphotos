@@ -15,13 +15,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.6.0"
-  asn1lib:
-    dependency: transitive
-    description:
-      name: asn1lib
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.8.1"
   async:
     dependency: transitive
     description:
@@ -36,13 +29,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0-nullsafety.1"
-  browser_launcher:
-    dependency: "direct main"
-    description:
-      name: browser_launcher
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.1.8"
   cached_network_image:
     dependency: "direct main"
     description:
@@ -86,19 +72,12 @@ packages:
     source: hosted
     version: "2.1.1"
   crypto:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: crypto
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.5"
-  crypton:
-    dependency: "direct main"
-    description:
-      name: crypton
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "1.1.3"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -212,13 +191,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.2.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.11.4"
   matcher:
     dependency: transitive
     description:
@@ -243,12 +215,10 @@ packages:
   nextcloud:
     dependency: "direct main"
     description:
-      path: "."
-      ref: "feature/notifications"
-      resolved-ref: a11408c39704aa8338034a5fbfb8029421cf8942
-      url: "https://github.com/Viktoriaschule/dart-nextcloud.git"
-    source: git
-    version: "2.0.0"
+      name: nextcloud
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.2"
   octo_image:
     dependency: transitive
     description:
@@ -333,13 +303,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.3"
-  pointycastle:
-    dependency: transitive
-    description:
-      name: pointycastle
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.0"
   process:
     dependency: transitive
     description:
@@ -520,13 +483,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0-nullsafety.3"
-  webkit_inspection_protocol:
-    dependency: transitive
-    description:
-      name: webkit_inspection_protocol
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.7.4"
   webview_flutter:
     dependency: "direct main"
     description:

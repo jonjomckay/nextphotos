@@ -198,8 +198,6 @@ class HomeModel extends ChangeNotifier {
       offset = offset + limit;
       total = total + photos.length;
 
-      // _photos.addAll(photos);
-
       notifyListeners();
 
       if (result.length < limit) {

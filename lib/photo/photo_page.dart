@@ -8,7 +8,7 @@ import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 
 class PhotoPage extends StatefulWidget {
-  PhotoPage({Key key, this.photos, this.photo, this.index})
+  PhotoPage({Key? key, required this.photos, required this.photo, required this.index})
       : pageController = PageController(initialPage: index);
 
   final List<PhotoListItem> photos;
@@ -21,7 +21,7 @@ class PhotoPage extends StatefulWidget {
 }
 
 class _PhotoPageState extends State<PhotoPage> {
-  Photo photo;
+  late Photo photo;
 
   @override
   void initState() {
@@ -77,7 +77,7 @@ class _PhotoPageState extends State<PhotoPage> {
             }),
             IconButton(icon: Icon(Icons.favorite), color: photo.favourite ? Colors.red : null, onPressed: () async {
               await context.read<HomeModel>().setPhotoFavourite(photo.id, photo.path, !photo.favourite);
-              await onPageChanged(widget.index);
+              onPageChanged(widget.index);
             }),
             IconButton(icon: Icon(Icons.delete), onPressed: () => {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -117,7 +117,7 @@ class _PhotoPageState extends State<PhotoPage> {
                     var photo = snapshot.data;
 
                     return CachedNetworkImage(
-                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo.path}',
+                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo?.path}',
                       httpHeaders: {'Authorization': model.authorization, 'OCS-APIRequest': 'true'},
                       progressIndicatorBuilder: (context, url, progress) {
                         return Stack(

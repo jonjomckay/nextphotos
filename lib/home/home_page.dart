@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HomePage extends StatefulWidget {
   static String route = '/';
 
-  HomePage({Key key}) : super(key: key);
+  HomePage({Key? key}) : super(key: key);
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -33,10 +33,10 @@ class _HomePageState extends State<HomePage> {
       var model = context.read<HomeModel>();
 
       model.setSettings(
-          prefs.getString('nextcloud.hostname'),
-          prefs.getString('nextcloud.username'),
-          prefs.getString('nextcloud.appPassword'),
-          prefs.getString('nextcloud.authorizationHeader')
+          prefs.getString('nextcloud.hostname')!,
+          prefs.getString('nextcloud.username')!,
+          prefs.getString('nextcloud.appPassword')!,
+          prefs.getString('nextcloud.authorizationHeader')!
       );
 
       model.refreshPhotos((message) {

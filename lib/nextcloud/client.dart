@@ -18,7 +18,7 @@ class CustomClient {
   final String _baseUrl;
   final String _username;
 
-  Network _network;
+  late Network _network;
 
   // Copied from the nextcloud package
   final Map<String, String> namespaces = {
@@ -131,7 +131,7 @@ class CustomClient {
 // ignore: public_member_api_docs
 class HttpClient extends http.BaseClient {
   // ignore: public_member_api_docs
-  HttpClient() : _client = http.Client();
+  HttpClient() : _client = http.Client() as http.BaseClient;
 
   final http.BaseClient _client;
 
@@ -203,8 +203,8 @@ class Network {
     String method,
     String url,
     List<int> expectedCodes, {
-    Uint8List data,
-    Map<String, String> headers,
+    List<int>? data,
+    Map<String, String>? headers,
   }) async {
     final response = await client.send(http.Request(method, Uri.parse(url))
       ..followRedirects = false
@@ -228,8 +228,8 @@ class Network {
     String method,
     String url,
     List<int> expectedCodes, {
-    Uint8List data,
-    Map<String, String> headers,
+    List<int>? data,
+    Map<String, String>? headers,
   }) async {
     final response = await client.send(http.Request(method, Uri.parse(url))
       ..followRedirects = false

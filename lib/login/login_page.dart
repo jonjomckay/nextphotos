@@ -17,10 +17,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  NextCloudClient _client;
-  LoginFlowInit _init;
-  String _hostname;
-  Timer _timer;
+  NextCloudClient? _client;
+  LoginFlowInit? _init;
+  String? _hostname;
+  Timer? _timer;
 
   @override
   void initState() {
@@ -32,11 +32,17 @@ class _LoginPageState extends State<LoginPage> {
 
     SharedPreferences.getInstance().then((prefs) {
       _timer = Timer.periodic(Duration(seconds: 2), (timer) {
-        if (_client == null) {
+        var client = _client;
+        if (client == null) {
           return;
         }
 
-        _client.login.pollLogin(_init).then((result) {
+        var init = _init;
+        if (init == null) {
+          return;
+        }
+
+        client.login.pollLogin(init).then((result) {
 
             var server = Uri.parse(result.server);
             var username = result.loginName;
@@ -62,10 +68,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     super.dispose();
-
-    if (_timer != null) {
-      _timer.cancel();
-    }
+    _timer?.cancel();
   }
 
   @override
@@ -107,7 +110,7 @@ class _LoginPageState extends State<LoginPage> {
         ),
       );
     } else {
-      child = WebView(userAgent: 'Nextphotos', initialUrl: _init.login, javascriptMode: JavascriptMode.unrestricted);
+      child = WebView(userAgent: 'Nextphotos', initialUrl: _init?.login, javascriptMode: JavascriptMode.unrestricted);
     }
 
     return Scaffold(

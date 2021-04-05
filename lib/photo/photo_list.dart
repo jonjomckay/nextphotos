@@ -9,9 +9,10 @@ import 'package:provider/provider.dart';
 class PhotoList extends StatelessWidget {
   ScrollController _scrollController = ScrollController();
 
+  final HomeModel model;
   final List<PhotoListItem> items;
 
-  PhotoList({Key key, this.items}) : super(key: key);
+  PhotoList({Key? key, required this.model, required this.items}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class PhotoList extends StatelessWidget {
               var item = items[currentItem];
 
               return Text(dateFormat.format(item.modifiedAt), style: TextStyle(
-                color: Colors.black87
+                  color: Colors.black87
               ));
             },
             child: GridView.builder(
@@ -47,15 +48,17 @@ class PhotoList extends StatelessWidget {
                     builder: (context, snapshot) {
                       switch (snapshot.connectionState) {
                         default:
-                          if (!snapshot.hasData) {
+                          var data = snapshot.data;
+                          if (data == null) {
                             return Container(color: Colors.white10);
                           }
 
-                          return Pic(items, snapshot.data, index);
+                          return Pic(items, data, index);
                       }
                     },
                   );
-                }));
+                })
+        );
       },
     );
   }

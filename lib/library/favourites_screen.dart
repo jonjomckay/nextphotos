@@ -12,6 +12,7 @@ class FavouritesScreen extends StatefulWidget {
 
 class _FavouritesScreenState extends State<FavouritesScreen> {
   List<PhotoListItem> _ids = [];
+  HomeModel? _model;
 
   @override
   void initState() {
@@ -19,11 +20,19 @@ class _FavouritesScreenState extends State<FavouritesScreen> {
 
     var model = context.read<HomeModel>();
 
-    model.listFavouritePhotoIds().then((ids) => setState(() => _ids = ids));
+    model.listFavouritePhotoIds().then((ids) => setState(() {
+      _ids = ids;
+      _model = model;
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: PhotoList(items: _ids));
+    var model = _model;
+    if (model == null) {
+      return Container();
+    }
+
+    return Container(child: PhotoList(model: model, items: _ids));
   }
 }

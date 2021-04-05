@@ -12,10 +12,10 @@ import '../nextcloud/client.dart';
 class HomeModel extends ChangeNotifier {
   final List<Photo> _photos = [];
 
-  String _hostname;
-  String _username;
-  String _password;
-  String _authorization;
+  String _hostname = '';
+  String _username = '';
+  String _password = '';
+  String _authorization = '';
 
   String get hostname => _hostname;
   String get username => _username;
@@ -37,7 +37,7 @@ class HomeModel extends ChangeNotifier {
     var result = await db.rawQuery('SELECT id, modified_at FROM photos WHERE favourite = true ORDER BY modified_at DESC');
 
     return result
-        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
+        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
         .toList();
   }
 
@@ -47,7 +47,7 @@ class HomeModel extends ChangeNotifier {
     var result = await db.rawQuery('SELECT id, modified_at FROM photos ORDER BY modified_at DESC');
 
     return result
-        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
+        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
         .toList();
   }
 
@@ -78,12 +78,12 @@ class HomeModel extends ChangeNotifier {
       var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
 
       return Photo(
-        id: result.first['id'],
+        id: result.first['id'] as String,
         favourite: result.first['favourite'] == 1 ? true : false,
-        modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
-        name: result.first['name'],
-        path: result.first['path'],
-        scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
+        modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at'] as int),
+        name: result.first['name'] as String,
+        path: result.first['path'] as String,
+        scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at'] as int),
       );
     } catch (e, stackTrace) {
       log('Unable to get the photo', error: e, stackTrace: stackTrace);
@@ -148,7 +148,7 @@ class HomeModel extends ChangeNotifier {
       log('Got search result in ${totalTime}ms');
 
       var photos = result.map((f) => Photo(
-          id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),
+          id: f.getOtherProp('fileid', 'http://owncloud.org/ns')!,
           favourite: f.favorite,
           modifiedAt: f.lastModified,
           name: f.name,
@@ -160,11 +160,9 @@ class HomeModel extends ChangeNotifier {
       offset = offset + limit;
       total = total + photos.length;
 
-      notifyListeners();
-
-      if (result.length < limit) {
+      // if (result.length < limit) {
         hasMore = false;
-      }
+      // }
 
       onMessage('Synchronised $total photos');
     }

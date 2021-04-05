@@ -6,7 +6,7 @@ class Photo {
   final DateTime modifiedAt;
   final DateTime scannedAt;
 
-  Photo({this.id, this.favourite, this.name, this.path, this.modifiedAt, this.scannedAt});
+  Photo({required this.id, required this.favourite, required this.name, required this.path, required this.modifiedAt, required this.scannedAt});
 
   Map<String, dynamic> toMap() {
     return {
@@ -24,5 +24,5 @@ class PhotoListItem {
   final String id;
   final DateTime modifiedAt;
 
-  PhotoListItem({ this.id, this.modifiedAt });
+  PhotoListItem({ required this.id, required this.modifiedAt });
 }

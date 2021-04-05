@@ -15,6 +15,7 @@ class LibraryScreen extends StatefulWidget {
 
 class _LibraryScreenState extends State<LibraryScreen> {
   List<PhotoListItem> _ids = [];
+  HomeModel? _model;
 
   @override
   void initState() {
@@ -22,11 +23,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
     var model = context.read<HomeModel>();
 
-    model.listPhotoIds().then((ids) => setState(() => _ids = ids));
+    model.listPhotoIds().then((ids) => setState(() {
+      _ids = ids;
+      _model = model;
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: PhotoList(items: _ids));
+    var model = _model;
+    if (model == null) {
+      return Container();
+    }
+
+    return Container(child: PhotoList(model: model, items: _ids));
   }
 }

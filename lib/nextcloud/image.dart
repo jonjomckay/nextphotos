@@ -9,7 +9,6 @@ import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/photo.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_page.dart';
-import 'package:progressive_image/progressive_image.dart';
 import 'package:provider/provider.dart';
 
 class Pic extends StatelessWidget {
@@ -25,10 +24,6 @@ class Pic extends StatelessWidget {
       builder: (context, model, child) {
         var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/${model.username}', ''));
 
-        var image = CachedNetworkImageProvider('https://${model.hostname}/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
-            headers: {'Authorization': model.authorization, 'OCS-APIRequest': 'true'},
-            imageRenderMethodForWeb: ImageRenderMethodForWeb.HttpGet);
-
         return GestureDetector(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -39,14 +34,17 @@ class Pic extends StatelessWidget {
                 );
               }));
             },
-            child: ProgressiveImage(
-              placeholder: AssetImage('assets/images/placeholder.png'),
-              thumbnail: image,
-              image: image,
+            child: CachedNetworkImage(
+              imageUrl: 'https://${model.hostname}/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
+              httpHeaders: {
+                'Authorization': model.authorization, 'OCS-APIRequest': 'true'
+              },
               height: 256,
               width: 256,
               fit: BoxFit.cover,
-            ));
+              placeholder: (context, url) => Image.asset('assets/images/placeholder.png'),
+            )
+        );
       },
     );
   }

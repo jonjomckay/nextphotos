@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
-import 'package:geocoder/geocoder.dart';
+import 'package:flutter_geocoder/geocoder.dart';
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/photo.dart';
@@ -126,7 +126,14 @@ class HomeModel extends ChangeNotifier {
       var approxLat = num.parse(coordinates[0]);
       var approxLng = num.parse(coordinates[1]);
 
-      var addresses = await Geocoder.local.findAddressesFromCoordinates(Coordinates(approxLat, approxLng));
+      List<Address> addresses;
+      try {
+        addresses = await Geocoder.local.findAddressesFromCoordinates(Coordinates(approxLat, approxLng));
+      } catch (e) {
+        // TODO
+        log('Unable to geocode a location. Perhaps your device has no location service installed? The error was: ' + e);
+        return;
+      }
 
       for (var address in addresses) {
         if (address.locality != null) {

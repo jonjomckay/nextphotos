@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nextphotos/home/home_model.dart';
+import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:nextphotos/ui/animated_indexed_stack.dart';
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage> {
         index: _currentPage,
         children: [
           LibraryScreen(),
-          Center(child: Text('Coming soon!'))
+          FavouritesScreen()
         ],
       )
     );

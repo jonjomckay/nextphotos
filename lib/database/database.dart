@@ -1,4 +1,6 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_migration_plan/migration/sql.dart';
+import 'package:sqflite_migration_plan/sqflite_migration_plan.dart';
 
 class Connection {
   static Future<Database> readOnly() async {
@@ -10,22 +12,17 @@ class Connection {
   }
 
   void migrate() async {
-    openDatabase('nextphotos.db', version: 2, onCreate: (db, version) async {
-      final migrations = [
-        'CREATE TABLE photos (id TEXT PRIMARY KEY, name TEXT, path TEXT, modified_at INTEGER, scanned_at INTEGER)',
-        'ALTER TABLE photos ADD COLUMN lat DOUBLE',
-        'ALTER TABLE photos ADD COLUMN lng DOUBLE',
-        'CREATE TABLE locations (lat DOUBLE, lng DOUBLE, name TEXT, country TEXT)',
-        'DROP TABLE locations',
-        'CREATE TABLE locations (id INTEGER PRIMARY KEY, lat DOUBLE, lng DOUBLE, name TEXT, country TEXT)',
-        'CREATE UNIQUE INDEX uk_locations_lat_lng ON locations (lat, lng)',
-        'ALTER TABLE photos ADD COLUMN location_id INTEGER',
-        'DROP TABLE locations'
-      ];
-
-      for (var migration in migrations) {
-        await db.execute(migration);
-      }
+    MigrationPlan myMigrationPlan = MigrationPlan({
+      2: [
+        SqlMigration('CREATE TABLE photos (id TEXT PRIMARY KEY, name TEXT, path TEXT, favourite INTEGER DEFAULT false, modified_at INTEGER, scanned_at INTEGER)', reverseSql: 'DROP TABLE photos')
+      ],
     });
+
+    openDatabase('nextphotos.db',
+        version: 2,
+        onUpgrade: myMigrationPlan,
+        onCreate: myMigrationPlan,
+        onDowngrade: myMigrationPlan
+    );
   }
 }

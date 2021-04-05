@@ -31,6 +31,16 @@ class HomeModel extends ChangeNotifier {
     _authorization = authorization;
   }
 
+  Future<List<PhotoListItem>> listFavouritePhotoIds() async {
+    final Database db = await Connection.readOnly();
+
+    var result = await db.rawQuery('SELECT id, modified_at FROM photos WHERE favourite = true ORDER BY modified_at DESC');
+
+    return result
+        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
+        .toList();
+  }
+
   Future<List<PhotoListItem>> listPhotoIds() async {
     final Database db = await Connection.readOnly();
 
@@ -44,15 +54,22 @@ class HomeModel extends ChangeNotifier {
   Future<Photo> getPhoto(String id) async {
     final Database db = await Connection.readOnly();
 
-    var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
+    try {
+      var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
 
-    return Photo(
-      id: result.first['id'],
-      modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
-      name: result.first['name'],
-      path: result.first['path'],
-      scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
-    );
+      return Photo(
+        id: result.first['id'],
+        favourite: result.first['favourite'] == 1 ? true : false,
+        modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at']),
+        name: result.first['name'],
+        path: result.first['path'],
+        scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at']),
+      );
+    } catch (e, stackTrace) {
+      log('Unable to get the photo', error: e, stackTrace: stackTrace);
+
+      throw e;
+    }
   }
 
   Future<void> clearOldPhotos(DateTime scannedAt) async {
@@ -112,6 +129,7 @@ class HomeModel extends ChangeNotifier {
 
       var photos = result.map((f) => Photo(
           id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),
+          favourite: f.favorite,
           modifiedAt: f.lastModified,
           name: f.name,
           path: f.path,

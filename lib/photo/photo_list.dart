@@ -48,7 +48,7 @@ class PhotoList extends StatelessWidget {
                       switch (snapshot.connectionState) {
                         default:
                           if (!snapshot.hasData) {
-                            return Image(image: AssetImage('assets/images/placeholder.png'));
+                            return Container(color: Colors.white10);
                           }
 
                           return Pic(items, snapshot.data, index);

@@ -6,7 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nextcloud/nextcloud.dart';
-import 'package:nextphotos/database/photo.dart';
+import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_page.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +14,7 @@ import 'package:provider/provider.dart';
 class Pic extends StatelessWidget {
   Pic(this.photos, this.photo, this.index);
 
-  final List<String> photos;
+  final List<PhotoListItem> photos;
   final Photo photo;
   final int index;
 

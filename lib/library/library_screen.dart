@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_list.dart';
 import 'package:provider/provider.dart';
@@ -13,7 +14,7 @@ class LibraryScreen extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<LibraryScreen> {
-  List<String> _ids = [];
+  List<PhotoListItem> _ids = [];
 
   @override
   void initState() {
@@ -26,6 +27,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(child: PhotoList(ids: _ids));
+    return Container(child: PhotoList(items: _ids));
   }
 }

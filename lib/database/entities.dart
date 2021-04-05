@@ -17,3 +17,10 @@ class Photo {
     };
   }
 }
+
+class PhotoListItem {
+  final String id;
+  final DateTime modifiedAt;
+
+  PhotoListItem({ this.id, this.modifiedAt });
+}

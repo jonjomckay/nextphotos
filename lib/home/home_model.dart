@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_geocoder/geocoder.dart';
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
-import 'package:nextphotos/database/photo.dart';
+import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/nextcloud/map_photo.dart';
 import 'package:nextphotos/search/search_location.dart';
 import 'package:quiver/collection.dart';
@@ -35,12 +35,14 @@ class HomeModel extends ChangeNotifier {
     _authorization = authorization;
   }
 
-  Future<List<String>> listLocationPhotoIds(int id) async {
+  Future<List<PhotoListItem>> listLocationPhotoIds(int id) async {
     final Database db = await Connection.readOnly();
 
     var result = await db.query('photos', where: 'location_id = ?', whereArgs: [id], orderBy: 'modified_at DESC');
 
-    return result.map((e) => e['id'] as String).toList();
+    return result
+        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
+        .toList();
   }
 
   Future<List<SearchLocation>> listLocations() async {
@@ -54,12 +56,14 @@ class HomeModel extends ChangeNotifier {
     }).toList();
   }
 
-  Future<List<String>> listPhotoIds() async {
+  Future<List<PhotoListItem>> listPhotoIds() async {
     final Database db = await Connection.readOnly();
 
-    var result = await db.rawQuery('SELECT id FROM photos ORDER BY modified_at DESC');
+    var result = await db.rawQuery('SELECT id, modified_at FROM photos ORDER BY modified_at DESC');
 
-    return result.map((e) => e['id'] as String).toList();
+    return result
+        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
+        .toList();
   }
 
   Future<Photo> getPhoto(String id) async {

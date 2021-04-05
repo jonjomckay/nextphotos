@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
-import 'package:nextphotos/database/photo.dart';
+import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +11,7 @@ class PhotoPage extends StatefulWidget {
   PhotoPage({Key key, this.photos, this.photo, this.index})
       : pageController = PageController(initialPage: index);
 
-  final List<String> photos;
+  final List<PhotoListItem> photos;
   final Photo photo;
   final int index;
   final PageController pageController;
@@ -30,7 +30,7 @@ class _PhotoPageState extends State<PhotoPage> {
   }
 
   void onPageChanged(int index) {
-    context.read<HomeModel>().getPhoto(widget.photos[index]).then((value) => setState(() {
+    context.read<HomeModel>().getPhoto(widget.photos[index].id).then((value) => setState(() {
           photo = value;
         }));
   }
@@ -97,7 +97,7 @@ class _PhotoPageState extends State<PhotoPage> {
             child: Consumer<HomeModel>(
               builder: (context, model, child) {
                 return FutureBuilder<Photo>(
-                  future: model.getPhoto(widget.photos[index]),
+                  future: model.getPhoto(widget.photos[index].id),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
                       return Container();

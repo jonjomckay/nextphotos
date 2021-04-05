@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_list.dart';
 import 'package:nextphotos/search/search_location.dart';
@@ -16,7 +17,7 @@ class SearchPlacePage extends StatefulWidget {
 }
 
 class _SearchPlacePageState extends State<SearchPlacePage> {
-  List<String> _ids = [];
+  List<PhotoListItem> _ids = [];
 
   String _hostname;
   String _username;
@@ -47,7 +48,7 @@ class _SearchPlacePageState extends State<SearchPlacePage> {
       appBar: AppBar(
         title: Text(widget.searchLocation.name),
       ),
-      body: PhotoList(ids: _ids),
+      body: PhotoList(items: _ids),
     );
   }
 }

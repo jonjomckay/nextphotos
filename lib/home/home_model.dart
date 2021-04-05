@@ -175,7 +175,7 @@ class HomeModel extends ChangeNotifier {
     };
 
     var hasMore = true;
-    var limit = 500;
+    var limit = 1000;
     var offset = 0;
     var total = 0;
 

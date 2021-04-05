@@ -51,6 +51,26 @@ class HomeModel extends ChangeNotifier {
         .toList();
   }
 
+  Future setPhotoFavourite(String id, String path, bool favourite) async {
+    // First, try to set the favourite inside Nextcloud, as we don't currently support offline favourites
+    try {
+      var client = NextCloudClient.withCredentials(Uri.parse('https://$_hostname'), _username, _password);
+      
+      await client.webDav.updateProps(path, {
+        WebDavProps.ocFavorite: favourite ? '1' : '0'
+      });
+
+    } catch (e, stackTrace) {
+      log('Unable to set the favourite prop for the photo $id', error: e, stackTrace: stackTrace);
+      throw e;
+    }
+
+    // Set the favourite inside our local database too
+    final Database db = await Connection.writable();
+
+    await db.rawUpdate('UPDATE photos SET favourite = ? WHERE id = ?', [favourite ? 1 : 0, id]);
+  }
+
   Future<Photo> getPhoto(String id) async {
     final Database db = await Connection.readOnly();
 

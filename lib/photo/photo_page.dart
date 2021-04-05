@@ -67,14 +67,25 @@ class _PhotoPageState extends State<PhotoPage> {
           )
         ],
       )),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.share), label: 'Share'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favourite'),
-          BottomNavigationBarItem(icon: Icon(Icons.delete), label: 'Delete')
-        ],
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          children: [
+            IconButton(icon: Icon(Icons.share), onPressed: () => {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Not supported yet!'),
+              ))
+            }),
+            IconButton(icon: Icon(Icons.favorite), color: photo.favourite ? Colors.red : null, onPressed: () async {
+              await context.read<HomeModel>().setPhotoFavourite(photo.id, photo.path, !photo.favourite);
+              await onPageChanged(widget.index);
+            }),
+            IconButton(icon: Icon(Icons.delete), onPressed: () => {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text('Not supported yet!'),
+              ))
+            }),
+          ],
+        ),
       ),
       body: Center(
           child: PhotoViewGallery.builder(

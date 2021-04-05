@@ -160,9 +160,9 @@ class HomeModel extends ChangeNotifier {
       offset = offset + limit;
       total = total + photos.length;
 
-      // if (result.length < limit) {
+      if (result.length < limit) {
         hasMore = false;
-      // }
+      }
 
       onMessage('Synchronised $total photos');
     }

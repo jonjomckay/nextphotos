@@ -22,14 +22,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Future<SharedPreferences> _preferences = SharedPreferences.getInstance();
 
-  int _currentPage;
-  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
-
-    _currentPage = 0;
 
     _preferences.then((prefs) {
       var model = context.read<HomeModel>();
@@ -44,8 +41,8 @@ class _HomePageState extends State<HomePage> {
       model.refreshPhotos((message) {
         log(message);
 
-        _scaffoldKey.currentState.hideCurrentSnackBar();
-        _scaffoldKey.currentState.showSnackBar(SnackBar(
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(message),
         ));
       });
@@ -55,44 +52,42 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: _scaffoldKey,
-        appBar: AppBar(
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.settings),
-              tooltip: 'Settings',
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
-              },
-            )
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentPage,
-          type: BottomNavigationBarType.fixed,
-          onTap: (value) {
-            setState(() {
-              _currentPage = value;
-            });
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.photo_library),
-              label: 'Library'
-            ),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite),
-                label: 'Favourites'
-            )
-          ],
-        ),
-        body: AnimatedIndexedStack(
-          index: _currentPage,
-          children: [
-            LibraryScreen(),
-            Center(child: Text('Coming soon!'))
-          ],
-        ));
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            tooltip: 'Settings',
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPage()));
+            },
+          )
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentPage,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) => setState(() {
+          _currentPage = index;
+        }),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.photo_library),
+            label: 'Library'
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Favourites'
+          )
+        ],
+      ),
+      body: AnimatedIndexedStack(
+        index: _currentPage,
+        children: [
+          LibraryScreen(),
+          Center(child: Text('Coming soon!'))
+        ],
+      )
+    );
   }
 
 }

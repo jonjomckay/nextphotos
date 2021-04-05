@@ -7,7 +7,7 @@ import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../client.dart';
+import '../nextcloud/client.dart';
 
 class HomeModel extends ChangeNotifier {
   final List<Photo> _photos = [];

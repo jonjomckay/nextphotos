@@ -124,7 +124,9 @@ class HomeModel extends ChangeNotifier {
 
     log('Updated ${photos.length} photos with locations');
 
-    locations.forEachKey((key, values) async {
+    for (var key in locations.keys) {
+      var values = locations[key];
+
       var coordinates = key.split(',');
 
       var approxLat = num.parse(coordinates[0]);
@@ -135,8 +137,8 @@ class HomeModel extends ChangeNotifier {
         addresses = await Geocoder.local.findAddressesFromCoordinates(Coordinates(approxLat, approxLng));
       } catch (e) {
         // TODO
-        log('Unable to geocode a location. Perhaps your device has no location service installed? The error was: ' + e);
-        return;
+        log('Unable to geocode a location. Perhaps your device has no location service installed?', error: e);
+        break;
       }
 
       for (var address in addresses) {
@@ -149,13 +151,12 @@ class HomeModel extends ChangeNotifier {
 
           var photoParameters = List<String>.generate(photos.length, (index) => '?').join(', ');
 
-          await db.rawUpdate(
-              'UPDATE photos SET location_id = ? WHERE id IN ($photoParameters)', [result.first['id'], ...values]);
+          await db.rawUpdate('UPDATE photos SET location_id = ? WHERE id IN ($photoParameters)', [result.first['id'], ...values]);
 
           break;
         }
       }
-    });
+    }
   }
 
   void refreshPhotos(Function(String message) onMessage) async {

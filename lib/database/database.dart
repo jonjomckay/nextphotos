@@ -10,7 +10,7 @@ class Connection {
   }
 
   void migrate() async {
-    openDatabase('nextphotos.db', version: 1, onCreate: (db, version) async {
+    openDatabase('nextphotos.db', version: 2, onCreate: (db, version) async {
       final migrations = [
         'CREATE TABLE photos (id TEXT PRIMARY KEY, name TEXT, path TEXT, modified_at INTEGER, scanned_at INTEGER)',
         'ALTER TABLE photos ADD COLUMN lat DOUBLE',
@@ -20,6 +20,7 @@ class Connection {
         'CREATE TABLE locations (id INTEGER PRIMARY KEY, lat DOUBLE, lng DOUBLE, name TEXT, country TEXT)',
         'CREATE UNIQUE INDEX uk_locations_lat_lng ON locations (lat, lng)',
         'ALTER TABLE photos ADD COLUMN location_id INTEGER',
+        'DROP TABLE locations'
       ];
 
       for (var migration in migrations) {

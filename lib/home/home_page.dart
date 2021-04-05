@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/library_screen.dart';
-import 'package:nextphotos/search/search_screen.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:nextphotos/ui/animated_indexed_stack.dart';
 import 'package:provider/provider.dart';
@@ -82,8 +81,8 @@ class _HomePageState extends State<HomePage> {
               label: 'Library'
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search',
+                icon: Icon(Icons.favorite),
+                label: 'Favourites'
             )
           ],
         ),
@@ -91,7 +90,7 @@ class _HomePageState extends State<HomePage> {
           index: _currentPage,
           children: [
             LibraryScreen(),
-            SearchScreen()
+            Center(child: Text('Coming soon!'))
           ],
         ));
   }

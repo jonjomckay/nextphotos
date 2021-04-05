@@ -2,13 +2,9 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/widgets.dart';
-import 'package:flutter_geocoder/geocoder.dart';
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/entities.dart';
-import 'package:nextphotos/nextcloud/map_photo.dart';
-import 'package:nextphotos/search/search_location.dart';
-import 'package:quiver/collection.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../client.dart';
@@ -33,27 +29,6 @@ class HomeModel extends ChangeNotifier {
     _username = username;
     _password = password;
     _authorization = authorization;
-  }
-
-  Future<List<PhotoListItem>> listLocationPhotoIds(int id) async {
-    final Database db = await Connection.readOnly();
-
-    var result = await db.query('photos', where: 'location_id = ?', whereArgs: [id], orderBy: 'modified_at DESC');
-
-    return result
-        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'])))
-        .toList();
-  }
-
-  Future<List<SearchLocation>> listLocations() async {
-    final Database db = await Connection.readOnly();
-
-    var results = await db.rawQuery(
-        'SELECT COUNT(*) AS count, l.id, l.name, l.lat, l.lng FROM locations l LEFT JOIN photos p ON l.id = p.location_id GROUP BY l.id');
-
-    return results.map((e) {
-      return SearchLocation(e['id'], e['count'], e['name'], e['lat'], e['lng']);
-    }).toList();
   }
 
   Future<List<PhotoListItem>> listPhotoIds() async {
@@ -102,63 +77,6 @@ class HomeModel extends ChangeNotifier {
     log('Inserted ${photos.length} photos');
   }
 
-  Future<void> updatePhotosWithLocations(Iterable<NextcloudMapPhoto> photos) async {
-    final Database db = await Connection.writable();
-
-    Batch batch = db.batch();
-
-    var locations = Multimap<String, int>();
-
-    for (var photo in photos) {
-      var approxLat = photo.lat.toStringAsFixed(2);
-      var approxLng = photo.lng.toStringAsFixed(2);
-
-      locations.add('$approxLat,$approxLng', photo.id);
-
-      // TODO: Stop using path as an identifier and use fileId everywhere
-      batch.rawUpdate('UPDATE photos SET lat = ?, lng = ? WHERE id = ?', [photo.lat, photo.lng, photo.id]);
-      // TODO: Fix this inconsistent path bollocks
-    }
-
-    await batch.commit(noResult: true);
-
-    log('Updated ${photos.length} photos with locations');
-
-    for (var key in locations.keys) {
-      var values = locations[key];
-
-      var coordinates = key.split(',');
-
-      var approxLat = num.parse(coordinates[0]);
-      var approxLng = num.parse(coordinates[1]);
-
-      List<Address> addresses;
-      try {
-        addresses = await Geocoder.local.findAddressesFromCoordinates(Coordinates(approxLat, approxLng));
-      } catch (e) {
-        // TODO
-        log('Unable to geocode a location. Perhaps your device has no location service installed?', error: e);
-        break;
-      }
-
-      for (var address in addresses) {
-        if (address.locality != null) {
-          db.rawInsert('INSERT OR IGNORE INTO locations (lat, lng, name, country) VALUES (?, ?, ?, ?)',
-              [address.coordinates.latitude, address.coordinates.longitude, address.locality, address.countryCode]);
-
-          var result = await db.rawQuery('SELECT id FROM locations WHERE lat = ? AND lng = ?',
-              [address.coordinates.latitude, address.coordinates.longitude]);
-
-          var photoParameters = List<String>.generate(photos.length, (index) => '?').join(', ');
-
-          await db.rawUpdate('UPDATE photos SET location_id = ? WHERE id IN ($photoParameters)', [result.first['id'], ...values]);
-
-          break;
-        }
-      }
-    }
-  }
-
   void refreshPhotos(Function(String message) onMessage) async {
     var otherClient = CustomClient('https://$_hostname', _username, _password);
 
@@ -184,7 +102,13 @@ class HomeModel extends ChangeNotifier {
     onMessage('Synchronising photos...');
 
     while (hasMore) {
+      var start = DateTime.now().millisecondsSinceEpoch;
+
       var result = await otherClient.search('/files/$_username', limit, offset, propFilters, props: props);
+
+      var totalTime = DateTime.now().millisecondsSinceEpoch - start;
+
+      log('Got search result in ${totalTime}ms');
 
       var photos = result.map((f) => Photo(
           id: f.getOtherProp('fileid', 'http://owncloud.org/ns'),
@@ -215,10 +139,5 @@ class HomeModel extends ChangeNotifier {
     await clearOldPhotos(scannedAt);
 
     notifyListeners();
-
-    // Load the map data for any photos we have
-    var a = await otherClient.photos();
-
-    await updatePhotosWithLocations(a);
   }
 }

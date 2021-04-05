@@ -3,6 +3,7 @@ import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/login/login_page.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home/home_page.dart';
@@ -24,7 +25,10 @@ void main() async {
 
   runApp(ChangeNotifierProvider(
     create: (context) => HomeModel(),
-    child: MyApp(child),
+    child: RefreshConfiguration(
+      enableScrollWhenRefreshCompleted: true,
+      child: MyApp(child),
+    ),
   ));
 }
 

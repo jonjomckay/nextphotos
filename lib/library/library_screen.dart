@@ -15,27 +15,25 @@ class LibraryScreen extends StatefulWidget {
 
 class _LibraryScreenState extends State<LibraryScreen> {
   List<PhotoListItem> _ids = [];
-  HomeModel? _model;
 
   @override
   void initState() {
     super.initState();
 
-    var model = context.read<HomeModel>();
+    _onRefresh();
+  }
 
-    model.listPhotoIds().then((ids) => setState(() {
+  Future _onRefresh() async {
+    var model = context.read<HomeModel>();
+    var ids = await model.listPhotoIds();
+
+    setState(() {
       _ids = ids;
-      _model = model;
-    }));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    var model = _model;
-    if (model == null) {
-      return Container();
-    }
-
-    return Container(child: PhotoList(model: model, items: _ids));
+    return Container(child: PhotoList(items: _ids, onRefresh: _onRefresh));
   }
 }

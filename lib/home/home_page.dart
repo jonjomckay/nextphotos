@@ -3,8 +3,6 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nextphotos/albums/albums_screen.dart';
-import 'package:nextphotos/for_you/for_you_screen.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/search/search_screen.dart';
@@ -79,9 +77,10 @@ class _HomePageState extends State<HomePage> {
             });
           },
           items: [
-            BottomNavigationBarItem(icon: Icon(Icons.photo_library), label: 'Library'),
-            BottomNavigationBarItem(icon: Icon(Icons.mood), label: 'For You'),
-            BottomNavigationBarItem(icon: Icon(Icons.photo_album), label: 'Albums'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.photo_library),
+              label: 'Library'
+            ),
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
               label: 'Search',
@@ -92,8 +91,6 @@ class _HomePageState extends State<HomePage> {
           index: _currentPage,
           children: [
             LibraryScreen(),
-            ForYouScreen(),
-            AlbumsScreen(),
             SearchScreen()
           ],
         ));

@@ -5,6 +5,14 @@ import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_page.dart';
 import 'package:provider/provider.dart';
 
+String generateCacheKey(String id, int size) {
+  return '$id-$size';
+}
+
+String generateCacheUri(String hostname, String username, String id, int size) {
+  return 'https://$hostname/index.php/core/preview?fileId=$id&x=$size&y=$size&a=1&mode=cover&forceIcon=0';
+}
+
 class Pic extends StatelessWidget {
   Pic(this.photos, this.photo, this.index);
 
@@ -16,8 +24,6 @@ class Pic extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<HomeModel>(
       builder: (context, model, child) {
-        var actualPath = Uri.decodeFull(photo.path.replaceFirst('/files/${model.username}', ''));
-
         return GestureDetector(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) {
@@ -29,8 +35,8 @@ class Pic extends StatelessWidget {
               }));
             },
             child: CachedNetworkImage(
-              cacheKey: photo.id,
-              imageUrl: 'https://${model.hostname}/index.php/apps/files/api/v1/thumbnail/256/256$actualPath',
+              cacheKey: generateCacheKey(photo.id, 256),
+              imageUrl: generateCacheUri(model.hostname, model.username, photo.id, 256),
               httpHeaders: {
                 'Authorization': model.authorization,
                 'OCS-APIRequest': 'true'

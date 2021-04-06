@@ -7,7 +7,6 @@ import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/settings/settings_page.dart';
-import 'package:nextphotos/ui/animated_indexed_stack.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +20,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final PageController _pageController = PageController();
   Future<SharedPreferences> _preferences = SharedPreferences.getInstance();
 
   int _currentPage = 0;
@@ -67,9 +67,9 @@ class _HomePageState extends State<HomePage> {
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentPage,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) => setState(() {
-          _currentPage = index;
-        }),
+        onTap: (index) {
+          _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+        },
         items: [
           BottomNavigationBarItem(
             icon: Icon(Icons.photo_library),
@@ -81,13 +81,16 @@ class _HomePageState extends State<HomePage> {
           )
         ],
       ),
-      body: AnimatedIndexedStack(
-        index: _currentPage,
+      body: PageView(
+        controller: _pageController,
+        onPageChanged: (index) => setState(() {
+          this._currentPage = index;
+        }),
         children: [
           LibraryScreen(),
           FavouritesScreen()
         ],
-      )
+      ),
     );
   }
 

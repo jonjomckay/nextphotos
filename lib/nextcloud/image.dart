@@ -44,6 +44,7 @@ class Pic extends StatelessWidget {
               height: 256,
               width: 256,
               fit: BoxFit.cover,
+              filterQuality: FilterQuality.high,
               placeholder: (context, url) => Container(color: Colors.white10),
             )
         );

@@ -46,8 +46,8 @@ class PhotoList extends StatelessWidget {
             },
             child: GridView.builder(
                 controller: _scrollController,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, crossAxisSpacing: 3, mainAxisSpacing: 3),
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 128, crossAxisSpacing: 3, mainAxisSpacing: 3),
                 itemCount: items.length,
                 itemBuilder: (BuildContext context, int index) {
                   var item = items[index];

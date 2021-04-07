@@ -70,6 +70,7 @@ class _PhotoPageState extends State<PhotoPage> {
       )),
       bottomNavigationBar: BottomAppBar(
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(icon: Icon(Icons.share), onPressed: () => {
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(

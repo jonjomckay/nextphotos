@@ -129,7 +129,7 @@ class _PhotoPageState extends State<PhotoPage> {
                       progressIndicatorBuilder: (context, url, progress) {
                         return Stack(
                           children: [
-                            Center(child: Thumbnail(id: photo.id, model: model, width: double.infinity)),
+                            Center(child: Thumbnail(id: photo.id, model: model, width: double.infinity, fit: BoxFit.contain)),
                             LinearProgressIndicator(
                               value: progress.progress,
                             ),

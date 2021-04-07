@@ -18,8 +18,9 @@ class Thumbnail extends StatelessWidget {
   final HomeModel model;
   final double? width;
   final double? height;
+  final BoxFit? fit;
 
-  const Thumbnail({Key? key, required this.id, required this.model, this.width, this.height}) : super(key: key);
+  const Thumbnail({Key? key, required this.id, required this.model, this.width, this.height, this.fit = BoxFit.cover}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +33,7 @@ class Thumbnail extends StatelessWidget {
       },
       height: height,
       width: width,
-      fit: BoxFit.cover,
+      fit: fit,
       filterQuality: FilterQuality.high,
       placeholder: (context, url) => Container(color: Colors.white10),
     );

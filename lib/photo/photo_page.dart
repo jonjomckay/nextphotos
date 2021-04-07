@@ -122,9 +122,8 @@ class _PhotoPageState extends State<PhotoPage> {
                         'Authorization': model.authorization,
                         'OCS-APIRequest': 'true'
                       },
-                      fadeInCurve: Curves.linear,
-                      fadeOutCurve: Curves.linear,
-                      placeholderFadeInDuration: Duration(milliseconds: 100),
+                      placeholderFadeInDuration: Duration(milliseconds: 200),
+                      fadeInDuration: Duration.zero,
                       fadeOutDuration: Duration(milliseconds: 1000),
                       progressIndicatorBuilder: (context, url, progress) {
                         return Stack(

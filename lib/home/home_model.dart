@@ -167,6 +167,8 @@ class HomeModel extends ChangeNotifier {
       }
 
       onMessage('Synchronised $total photos');
+
+      notifyListeners();
     }
 
     var totalTime = DateTime.now().difference(scannedAt);

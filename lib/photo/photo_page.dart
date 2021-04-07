@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
+import 'package:nextphotos/nextcloud/image.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 
@@ -110,26 +111,29 @@ class _PhotoPageState extends State<PhotoPage> {
                 return FutureBuilder<Photo>(
                   future: model.getPhoto(widget.photos[index].id),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
+                    var photo = snapshot.data;
+                    if (photo == null) {
                       return Container();
                     }
 
-                    var photo = snapshot.data;
-
                     return CachedNetworkImage(
-                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo?.path}',
-                      httpHeaders: {'Authorization': model.authorization, 'OCS-APIRequest': 'true'},
+                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo.path}',
+                      httpHeaders: {
+                        'Authorization': model.authorization,
+                        'OCS-APIRequest': 'true'
+                      },
+                      fadeInCurve: Curves.linear,
+                      fadeOutCurve: Curves.linear,
+                      placeholderFadeInDuration: Duration(milliseconds: 100),
+                      fadeOutDuration: Duration(milliseconds: 1000),
                       progressIndicatorBuilder: (context, url, progress) {
                         return Stack(
                           children: [
-                            SpinKitPulse(
-                              color: Theme.of(context).primaryColorLight,
-                              size: 50.0,
-                            ),
+                            Center(child: Thumbnail(id: photo.id, model: model, width: double.infinity)),
                             LinearProgressIndicator(
                               value: progress.progress,
-                            )
-                          ],
+                            ),
+                          ]
                         );
                       },
                     );

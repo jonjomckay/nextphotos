@@ -40,33 +40,33 @@ class _PhotoPageState extends State<PhotoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                  padding: EdgeInsets.all(2),
-                  child: Center(
-                      child: Text(
-                    new DateFormat.yMMMMd().format(photo.modifiedAt),
-                    textScaleFactor: 0.95,
-                  )))
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                  padding: EdgeInsets.all(2),
-                  child: Center(
-                      child: Text(
-                    new DateFormat.Hm().format(photo.modifiedAt),
-                    textScaleFactor: 0.7,
-                  )))
-            ],
-          )
-        ],
+        title: Column(
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Center(
+                        child: Text(
+                      new DateFormat.yMMMMd().format(photo.modifiedAt),
+                      textScaleFactor: 0.95,
+                    )))
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Center(
+                        child: Text(
+                      new DateFormat.Hm().format(photo.modifiedAt),
+                      textScaleFactor: 0.7,
+                    )))
+              ],
+            )
+          ],
       )),
       bottomNavigationBar: BottomAppBar(
         child: Row(
@@ -89,60 +89,59 @@ class _PhotoPageState extends State<PhotoPage> {
         ),
       ),
       body: Center(
-          child: PhotoViewGallery.builder(
-        scrollPhysics: const BouncingScrollPhysics(),
-        loadingBuilder: (context, event) {
-          return SpinKitPulse(
-            color: Theme.of(context).primaryColorLight,
-            size: 50.0,
-          );
-        },
-        backgroundDecoration: BoxDecoration(
-          color: Colors.black,
-        ),
-        pageController: widget.pageController,
-        onPageChanged: onPageChanged,
-        scrollDirection: Axis.horizontal,
-        builder: (context, index) {
-          // var photo = widget.photos[index];
-          return PhotoViewGalleryPageOptions.customChild(
-            child: Consumer<HomeModel>(
-              builder: (context, model, child) {
-                return FutureBuilder<Photo>(
-                  future: model.getPhoto(widget.photos[index].id),
-                  builder: (context, snapshot) {
-                    var photo = snapshot.data;
-                    if (photo == null) {
-                      return Container();
-                    }
-
-                    return CachedNetworkImage(
-                      imageUrl: 'https://${model.hostname}/remote.php/dav${photo.path}',
-                      httpHeaders: {
-                        'Authorization': model.authorization,
-                        'OCS-APIRequest': 'true'
-                      },
-                      placeholderFadeInDuration: Duration(milliseconds: 200),
-                      fadeInDuration: Duration.zero,
-                      fadeOutDuration: Duration(milliseconds: 1000),
-                      progressIndicatorBuilder: (context, url, progress) {
-                        return Stack(
-                          children: [
-                            Center(child: Thumbnail(id: photo.id, model: model, width: double.infinity, fit: BoxFit.contain)),
-                            LinearProgressIndicator(
-                              value: progress.progress,
-                            ),
-                          ]
-                        );
-                      },
-                    );
-                  },
+        child: Consumer<HomeModel>(
+          builder: (context, model, child) {
+            return PhotoViewGallery.builder(
+              scrollPhysics: const BouncingScrollPhysics(),
+              loadingBuilder: (context, event) {
+                return SpinKitPulse(
+                  color: Theme.of(context).primaryColorLight,
+                  size: 50.0,
                 );
               },
-            ));
-        },
-        itemCount: widget.photos.length,
-      )),
+              backgroundDecoration: BoxDecoration(
+                color: Colors.black,
+              ),
+              pageController: widget.pageController,
+              onPageChanged: onPageChanged,
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.photos.length,
+              builder: (context, index) {
+                return PhotoViewGalleryPageOptions.customChild(
+                  child: FutureBuilder<Photo>(
+                    future: model.getPhoto(widget.photos[index].id),
+                    builder: (context, snapshot) {
+                      var photo = snapshot.data;
+                      if (photo == null) {
+                        return Container();
+                      }
+
+                      return CachedNetworkImage(
+                        imageUrl: 'https://${model.hostname}/remote.php/dav${photo.path}',
+                        httpHeaders: {
+                          'Authorization': model.authorization,
+                          'OCS-APIRequest': 'true'
+                        },
+                        placeholderFadeInDuration: Duration(milliseconds: 200),
+                        fadeInDuration: Duration.zero,
+                        fadeOutDuration: Duration(milliseconds: 1000),
+                        progressIndicatorBuilder: (context, url, progress) {
+                          return Stack(
+                              children: [
+                                Center(child: Thumbnail(id: photo.id, model: model, width: double.infinity, fit: BoxFit.contain)),
+                                LinearProgressIndicator(
+                                  value: progress.progress,
+                                ),
+                              ]
+                          );
+                        },
+                      );
+                    },
+                  ));
+              },
+            );
+          },
+        )),
     );
   }
 }

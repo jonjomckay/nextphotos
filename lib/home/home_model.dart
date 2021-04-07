@@ -69,6 +69,8 @@ class HomeModel extends ChangeNotifier {
     final Database db = await Connection.writable();
 
     await db.rawUpdate('UPDATE photos SET favourite = ? WHERE id = ?', [favourite ? 1 : 0, id]);
+
+    notifyListeners();
   }
 
   Future<Photo> getPhoto(String id) async {

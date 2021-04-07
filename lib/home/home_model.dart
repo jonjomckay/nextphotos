@@ -34,20 +34,20 @@ class HomeModel extends ChangeNotifier {
   Future<List<PhotoListItem>> listFavouritePhotoIds() async {
     final Database db = await Connection.readOnly();
 
-    var result = await db.rawQuery('SELECT id, modified_at FROM photos WHERE favourite = true ORDER BY modified_at DESC');
+    var result = await db.rawQuery('SELECT id, favourite, modified_at FROM photos WHERE favourite = true ORDER BY modified_at DESC');
 
     return result
-        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
+        .map((e) => PhotoListItem(id: e['id'] as String, favourite: e['favourite'] == 1 ? true : false, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
         .toList();
   }
 
   Future<List<PhotoListItem>> listPhotoIds() async {
     final Database db = await Connection.readOnly();
 
-    var result = await db.rawQuery('SELECT id, modified_at FROM photos ORDER BY modified_at DESC');
+    var result = await db.rawQuery('SELECT id, favourite, modified_at FROM photos ORDER BY modified_at DESC');
 
     return result
-        .map((e) => PhotoListItem(id: e['id'] as String, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
+        .map((e) => PhotoListItem(id: e['id'] as String, favourite: e['favourite'] == 1 ? true : false, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
         .toList();
   }
 

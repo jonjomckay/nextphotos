@@ -34,18 +34,37 @@ class Pic extends StatelessWidget {
                 );
               }));
             },
-            child: CachedNetworkImage(
-              cacheKey: generateCacheKey(photo.id, 256),
-              imageUrl: generateCacheUri(model.hostname, model.username, photo.id, 256),
-              httpHeaders: {
-                'Authorization': model.authorization,
-                'OCS-APIRequest': 'true'
-              },
-              height: 256,
-              width: 256,
-              fit: BoxFit.cover,
-              filterQuality: FilterQuality.high,
-              placeholder: (context, url) => Container(color: Colors.white10),
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                CachedNetworkImage(
+                  cacheKey: generateCacheKey(photo.id, 256),
+                  imageUrl: generateCacheUri(model.hostname, model.username, photo.id, 256),
+                  httpHeaders: {
+                    'Authorization': model.authorization,
+                    'OCS-APIRequest': 'true'
+                  },
+                  height: 256,
+                  width: 256,
+                  fit: BoxFit.cover,
+                  filterQuality: FilterQuality.high,
+                  placeholder: (context, url) => Container(color: Colors.white10),
+                ),
+                if (photo.favourite)
+                  Container(
+                    margin: EdgeInsets.all(8),
+                    child: Icon(Icons.favorite, size: 18, color: Colors.white),
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black45,
+                            blurRadius: 8.0,
+                          ),
+                        ]
+                    ),
+                  ),
+              ],
             )
         );
       },

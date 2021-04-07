@@ -22,7 +22,8 @@ class Photo {
 
 class PhotoListItem {
   final String id;
+  final bool favourite;
   final DateTime modifiedAt;
 
-  PhotoListItem({ required this.id, required this.modifiedAt });
+  PhotoListItem({ required this.id, required this.favourite, required this.modifiedAt });
 }

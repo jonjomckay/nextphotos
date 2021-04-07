@@ -39,15 +39,17 @@ class _HomePageState extends State<HomePage> {
           prefs.getString('nextcloud.authorizationHeader')!
       );
 
-      model.refreshPhotos((message) {
-        log(message);
-
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(message),
-        ));
-      });
+      model.refreshPhotos(_onRefresh);
     });
+  }
+
+  void _onRefresh(String message) {
+    log(message);
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message),
+    ));
   }
 
   @override
@@ -87,8 +89,8 @@ class _HomePageState extends State<HomePage> {
           this._currentPage = index;
         }),
         children: [
-          LibraryScreen(),
-          FavouritesScreen()
+          LibraryScreen(onRefresh: _onRefresh),
+          FavouritesScreen(onRefresh: _onRefresh)
         ],
       ),
     );

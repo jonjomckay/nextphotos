@@ -43,7 +43,7 @@ class Thumbnail extends StatelessWidget {
 class Pic extends StatelessWidget {
   Pic(this.photos, this.photo, this.index);
 
-  final List<PhotoListItem> photos;
+  final List<Photo> photos;
   final Photo photo;
   final int index;
 

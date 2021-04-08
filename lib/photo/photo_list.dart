@@ -11,7 +11,7 @@ class PhotoList extends StatelessWidget {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
   final ScrollController _scrollController = ScrollController();
 
-  final Future<List<PhotoListItem>> itemsFuture;
+  final Future<List<Photo>> itemsFuture;
   final Function(String) onRefresh;
 
   PhotoList({Key? key, required this.itemsFuture, required this.onRefresh}) : super(key: key);
@@ -30,7 +30,7 @@ class PhotoList extends StatelessWidget {
     var dateFormat = DateFormat.yMMMd();
 
     return Consumer<HomeModel>(builder: (context, model, child) {
-      return FutureBuilder<List<PhotoListItem>>(
+      return FutureBuilder<List<Photo>>(
         future: this.itemsFuture,
         builder: (context, snapshot) {
           var items = snapshot.data;

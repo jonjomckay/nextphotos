@@ -31,24 +31,46 @@ class HomeModel extends ChangeNotifier {
     _authorization = authorization;
   }
 
-  Future<List<PhotoListItem>> listFavouritePhotoIds() async {
-    final Database db = await Connection.readOnly();
-
-    var result = await db.rawQuery('SELECT id, favourite, modified_at FROM photos WHERE favourite = true ORDER BY modified_at DESC');
-
-    return result
-        .map((e) => PhotoListItem(id: e['id'] as String, favourite: e['favourite'] == 1 ? true : false, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
-        .toList();
+  static Photo _mapToPhoto(Map<String, Object?> e) {
+    return Photo(
+      id: e['id'] as String,
+      downloadPath: e['download_path'] as String?,
+      favourite: e['favourite'] == 1 ? true : false,
+      modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int),
+      name: e['name'] as String,
+      path: e['path'] as String,
+      scannedAt: DateTime.fromMillisecondsSinceEpoch(e['scanned_at'] as int),
+    );
   }
 
-  Future<List<PhotoListItem>> listPhotoIds() async {
+  Future<List<Photo>> listFavouritePhotoIds() async {
     final Database db = await Connection.readOnly();
 
-    var result = await db.rawQuery('SELECT id, favourite, modified_at FROM photos ORDER BY modified_at DESC');
+    var result = await db.query('photos', where: 'favourite = ?', whereArgs: [1], orderBy: 'modified_at DESC');
 
     return result
-        .map((e) => PhotoListItem(id: e['id'] as String, favourite: e['favourite'] == 1 ? true : false, modifiedAt: DateTime.fromMillisecondsSinceEpoch(e['modified_at'] as int)))
-        .toList();
+      .map((e) => _mapToPhoto(e))
+      .toList(growable: false);
+  }
+
+  Future<List<Photo>> listPhotoIds() async {
+    final Database db = await Connection.readOnly();
+
+    var result = await db.query('photos', orderBy: 'modified_at DESC');
+
+    return result
+        .map((e) => _mapToPhoto(e))
+        .toList(growable: false);
+  }
+
+  Future setPhotoDownloadPath(String id, String? downloadPath) async {
+    final Database db = await Connection.writable();
+
+    await db.update('photos', {
+      'download_path': downloadPath
+    }, where: 'id = ?', whereArgs: [id]);
+
+    notifyListeners();
   }
 
   Future setPhotoFavourite(String id, String path, bool favourite) async {
@@ -79,14 +101,7 @@ class HomeModel extends ChangeNotifier {
     try {
       var result = await db.query('photos', where: 'id = ?', whereArgs: [id]);
 
-      return Photo(
-        id: result.first['id'] as String,
-        favourite: result.first['favourite'] == 1 ? true : false,
-        modifiedAt: DateTime.fromMillisecondsSinceEpoch(result.first['modified_at'] as int),
-        name: result.first['name'] as String,
-        path: result.first['path'] as String,
-        scannedAt: DateTime.fromMillisecondsSinceEpoch(result.first['scanned_at'] as int),
-      );
+      return _mapToPhoto(result.first);
     } catch (e, stackTrace) {
       log('Unable to get the photo', error: e, stackTrace: stackTrace);
 

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_migration_plan/migration/sql.dart';
 import 'package:sqflite_migration_plan/sqflite_migration_plan.dart';
@@ -16,13 +18,18 @@ class Connection {
       2: [
         SqlMigration('CREATE TABLE photos (id TEXT PRIMARY KEY, name TEXT, path TEXT, favourite INTEGER DEFAULT false, modified_at INTEGER, scanned_at INTEGER)', reverseSql: 'DROP TABLE photos')
       ],
+      3: [
+        SqlMigration('ALTER TABLE photos ADD COLUMN download_path TEXT NULL')
+      ]
     });
 
-    openDatabase('nextphotos.db',
-        version: 2,
+    await openDatabase('nextphotos.db',
+        version: 3,
         onUpgrade: myMigrationPlan,
         onCreate: myMigrationPlan,
         onDowngrade: myMigrationPlan
     );
+
+    log('Finished migrating database');
   }
 }

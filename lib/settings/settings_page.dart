@@ -29,7 +29,7 @@ class _SettingsPageState extends State<SettingsPage> {
     var model = context.read<HomeModel>();
     var cacheManager = DefaultCacheManager();
 
-    var cachePhoto = (String key, PhotoListItem photo) async {
+    var cachePhoto = (String key, Photo photo) async {
       var uri = generateCacheUri(model.hostname, model.username, photo.id, 256);
 
       var stream = cacheManager.getImageFile(uri, key: key, headers: {

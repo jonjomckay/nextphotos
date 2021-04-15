@@ -2,7 +2,7 @@
 # See https://dart.dev/tools/pub/glossary#lockfile
 packages:
   archive:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: archive
       url: "https://pub.dartlang.org"
@@ -64,6 +64,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
+  csv:
+    dependency: transitive
+    description:
+      name: csv
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.0"
   cupertino_icons:
     dependency: "direct main"
     description:
@@ -128,6 +135,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  geocoder_offline:
+    dependency: "direct main"
+    description:
+      name: geocoder_offline
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   http:
     dependency: transitive
     description:
@@ -170,6 +184,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.3"
+  kdtree:
+    dependency: transitive
+    description:
+      name: kdtree
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   logging:
     dependency: transitive
     description:

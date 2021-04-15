@@ -1,10 +1,16 @@
 import 'dart:collection';
 import 'dart:developer';
+import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter/widgets.dart';
+import 'package:geocoder_offline/geocoder_offline.dart';
+import 'package:http/http.dart' as http;
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/entities.dart';
+import 'package:nextphotos/nextcloud/map_photo.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../nextcloud/client.dart';
@@ -194,5 +200,130 @@ class HomeModel extends ChangeNotifier {
     await clearOldPhotos(scannedAt);
 
     notifyListeners();
+
+    // // Load the map data for any photos we have
+    // var mapPhotos = await otherClient.photos();
+    //
+    // await updatePhotosWithLocations(mapPhotos);
+  }
+
+  Future doMapStuff() async {
+    var otherClient = CustomClient('https://$_hostname', _username, _password);
+
+
+    // Load the map data for any photos we have
+    var mapPhotos = await otherClient.photos();
+
+    await updatePhotosWithLocations(mapPhotos);
+  }
+
+  Future<File> _downloadFile(String url, String filename) async {
+    String dir = (await getApplicationSupportDirectory()).path;
+    File file = new File('$dir/$filename');
+    if (file.existsSync()) {
+      return file;
+    }
+
+    http.Client client = new http.Client();
+    var req = await client.get(Uri.parse(url));
+    var bytes = req.bodyBytes;
+    await file.writeAsBytes(bytes);
+    return file;
+  }
+
+  Future<void> updatePhotosWithLocations(List<NextcloudMapPhoto> photos) async {
+    final Database db = await Connection.writable();
+
+    var download = await _downloadFile('https://download.geonames.org/export/dump/cities500.zip', 'cities500.zip');
+
+    log('Geonames have been downloaded');
+
+    var extracted = File(download.parent.path + '/cities500.txt');
+    if (!extracted.existsSync()) {
+      var archive = ZipDecoder().decodeBytes(download.readAsBytesSync());
+
+      // Extract the contents of the Zip archive to disk.
+      for (final file in archive) {
+        final filename = file.name;
+        if (file.isFile) {
+          final data = file.content as List<int>;
+          File(download.parent.path + '/' + filename)
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(data);
+        } else {
+          log('A directory was encountered in the Geonames ZIP, but this wasn\'t expected');
+        }
+      }
+    }
+
+    log('Geonames have been extracted');
+
+    var cities = 'geonameid\tname\tasciiname\talternatenames\tlatitude\tlongitude\tfeature class\tfeature code\tcountry code\tcc2\tadmin1 code\tadmin2 code\tadmin3 code\tadmin4 code\tpopulation\televation\tdem\ttimezone\tmodification date\n' + extracted.readAsStringSync();
+
+    var geocoder = GeocodeData(
+        cities,
+        'name',
+        'country code',
+        'latitude',
+        'longitude',
+        fieldDelimiter: '\t',
+        eol: '\n'
+    );
+
+    log('Geocoder has been initialized');
+
+    Batch batch = db.batch();
+
+    for (var photo in photos) {
+      var locations = geocoder.search(photo.lat, photo.lng);
+
+      var location = locations.first.location;
+
+      var id = Sqflite.firstIntValue(await db.rawQuery('SELECT id FROM locations WHERE lat = ? AND lng = ?', [location.latitude, location.longitude]));
+      if (id == null) {
+        id = await db.insert('locations', {
+          'lat': location.latitude,
+          'lng': location.longitude,
+          'name': location.featureName
+        });
+      }
+
+      batch.update('photos', {
+        'location_id': id,
+        'lat': photo.lat,
+        'lng': photo.lng
+      }, where: 'id = ?', whereArgs: [photo.id]);
+    }
+
+    await batch.commit(noResult: true);
+
+    // Remove locations with no photos
+    var deleted = await db.rawDelete('DELETE FROM locations WHERE id NOT IN (SELECT DISTINCT location_id FROM photos WHERE location_id IS NOT NULL)');
+
+    log('Removed $deleted old locations');
+
+    log('Updated ${photos.length} photos with locations');
+  }
+
+  Future<List<Location>> listLocations() async {
+    final Database db = await Connection.readOnly();
+
+    var results = await db.rawQuery('SELECT MAX(modified_at), id, name, lat, lng, p_id FROM (SELECT l.id, l.name, l.lat, l.lng, p.id AS p_id, p.modified_at FROM locations l LEFT JOIN photos p ON p.location_id = l.id) GROUP BY id');
+
+    return (results)
+        .map((e) => Location(id: e['id'] as int, name: e['name'] as String, lat: e['lat'] as double, lng: e['lng'] as double, coverPhoto: e['p_id'] as String))
+        .toList(growable: false);
+  }
+
+  Future<LocationGet> getLocation(int id) async {
+    final Database db = await Connection.readOnly();
+
+    var photos = (await db.query('photos', where: 'location_id = ?', whereArgs: [id]))
+      .map((e) => _mapToPhoto(e))
+      .toList(growable: false);
+
+    return (await db.query('locations', where: 'id = ?', whereArgs: [id]))
+        .map((e) => LocationGet(id: e['id'] as int, name: e['name'] as String, photos: photos))
+        .first;
   }
 }

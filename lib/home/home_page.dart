@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
+import 'package:nextphotos/search/search_page.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -80,6 +81,10 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
               label: 'Favourites'
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Search'
           )
         ],
       ),
@@ -90,7 +95,8 @@ class _HomePageState extends State<HomePage> {
         }),
         children: [
           LibraryScreen(onRefresh: _onRefresh),
-          FavouritesScreen(onRefresh: _onRefresh)
+          FavouritesScreen(onRefresh: _onRefresh),
+          SearchScreen(),
         ],
       ),
     );

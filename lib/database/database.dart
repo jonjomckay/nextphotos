@@ -20,11 +20,21 @@ class Connection {
       ],
       3: [
         SqlMigration('ALTER TABLE photos ADD COLUMN download_path TEXT NULL')
+      ],
+      4: [
+        SqlMigration('CREATE TABLE locations (id INTEGER PRIMARY KEY, name TEXT NOT NULL, lat REAL NOT NULL, lng REAL NOT NULL)')
+      ],
+      5: [
+        SqlMigration('ALTER TABLE photos ADD COLUMN location_id INTEGER NULL REFERENCES locations (id) ON DELETE SET NULL')
+      ],
+      6: [
+        SqlMigration('ALTER TABLE photos ADD COLUMN lat REAL NULL'),
+        SqlMigration('ALTER TABLE photos ADD COLUMN lng REAL NULL'),
       ]
     });
 
     await openDatabase('nextphotos.db',
-        version: 3,
+        version: 6,
         onUpgrade: myMigrationPlan,
         onCreate: myMigrationPlan,
         onDowngrade: myMigrationPlan

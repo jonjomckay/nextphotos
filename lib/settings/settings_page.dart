@@ -77,6 +77,12 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
+  Future onTapMapStuff() async {
+    var model = context.read<HomeModel>();
+
+    await model.doMapStuff();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,6 +102,12 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text('Download thumbnails for your entire library'),
             leading: const Icon(Icons.cloud_download),
             onTap: onTapPrecacheThumbnails,
+          ),
+          ListTile(
+            title: Text('Map stuff'),
+            subtitle: Text('Do map stuff'),
+            leading: const Icon(Icons.map),
+            onTap: onTapMapStuff,
           )
         ],
       ),

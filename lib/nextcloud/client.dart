@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:nextcloud/nextcloud.dart';
 import 'package:xml/xml.dart';
 
+import 'map_photo.dart';
+
 class CustomClient {
   CustomClient(
     this._baseUrl,
@@ -28,6 +30,16 @@ class CustomClient {
     'https://github.com/icewind1991/SearchDAV/ns': 'ns',
     'http://open-collaboration-services.org/ns': 'ocs',
   };
+
+  Future<List<NextcloudMapPhoto>> photos() async {
+    final response = await _network.send('GET', '$_baseUrl/apps/maps/photos', [200]);
+
+    var result = jsonDecode(response.body) as List<dynamic>;
+
+    return result
+        .map((e) => NextcloudMapPhoto.fromJson(e))
+        .toList(growable: false);
+  }
 
   Future<List<WebDavFile>> search(
     String remotePath,

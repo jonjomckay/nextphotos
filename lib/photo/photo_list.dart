@@ -1,11 +1,21 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/nextcloud/image.dart';
-import 'package:nextphotos/ui/draggable_scrollbar.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+
+extension Iterables<E> on Iterable<E> {
+  Map<K, List<E>> groupBy<K>(K Function(E) keyFunction) => fold(
+      <K, List<E>>{},
+          (Map<K, List<E>> map, E element) =>
+      map..putIfAbsent(keyFunction(element), () => <E>[]).add(element));
+}
 
 class PhotoList extends StatelessWidget {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
@@ -38,50 +48,38 @@ class PhotoList extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
 
-          return DraggableScrollbar.arrows(
-              controller: _scrollController,
-              backgroundColor: Colors.white,
-              labelConstraints: BoxConstraints.tightFor(width: 120, height: 40),
-              labelTextBuilder: (double offset) {
-                final int currentItem = _scrollController.hasClients
-                    ? (_scrollController.offset / (_scrollController.position.maxScrollExtent + 1) * items.length).floor()
-                    : 0;
+          var groups = items.groupBy((e) => dateFormat.format(e.modifiedAt));
+          var titles = groups.keys.toList(growable: false);
 
-                var item = items[currentItem];
+          return ListView.builder(
+            itemCount: groups.length,
+            itemBuilder: (context, index) {
+              var title = titles[index];
+              var photos = groups[title]!;
 
-                return Text(dateFormat.format(item.modifiedAt), style: TextStyle(
-                    color: Colors.black87
-                ));
-              },
-              child: SmartRefresher(
-                controller: _refreshController,
-                enablePullUp: false,
-                enablePullDown: true,
-                onRefresh: () => _onRefresh(context),
-                child: GridView.builder(
-                    controller: _scrollController,
-                    gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 128, crossAxisSpacing: 3, mainAxisSpacing: 3),
-                    itemCount: items.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      var item = items[index];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                    child: Text(title, style: TextStyle(
+                      fontWeight: FontWeight.bold
+                    )),
+                  ),
+                  GridView.builder(
+                      shrinkWrap: true,
+                      controller: _scrollController,
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 128, crossAxisSpacing: 4, mainAxisSpacing: 4),
+                      itemCount: photos.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        var photo = photos[index];
 
-                      return FutureBuilder<Photo>(
-                        future: model.getPhoto(item.id),
-                        builder: (context, snapshot) {
-                          switch (snapshot.connectionState) {
-                            default:
-                              var data = snapshot.data;
-                              if (data == null) {
-                                return Container(color: Colors.white10);
-                              }
-
-                              return Pic(items, data, index);
-                          }
-                        },
-                      );
-                    }),
-              )
+                        return Pic(photos, photo, index);
+                      })
+                ],
+              );
+            },
           );
         },
       );

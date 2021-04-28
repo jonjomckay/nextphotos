@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
@@ -24,10 +24,12 @@ class Thumbnail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CachedNetworkImage(
+    return ExtendedImage.network(
+      generateCacheUri(model.hostname, model.username, id, 256),
+      cache: true,
       cacheKey: generateCacheKey(id, 256),
-      imageUrl: generateCacheUri(model.hostname, model.username, id, 256),
-      httpHeaders: {
+      clearMemoryCacheIfFailed: true,
+      headers: {
         'Authorization': model.authorization,
         'OCS-APIRequest': 'true'
       },
@@ -35,7 +37,17 @@ class Thumbnail extends StatelessWidget {
       width: width,
       fit: fit,
       filterQuality: FilterQuality.high,
-      placeholder: (context, url) => Container(color: Colors.white10),
+      enableLoadState: true,
+      loadStateChanged: (state) {
+        switch (state.extendedImageLoadState) {
+          case LoadState.loading:
+            return Container(color: Colors.white10);
+          case LoadState.failed:
+            return state.completedWidget;
+          default:
+            return state.completedWidget;
+        }
+      },
     );
   }
 }

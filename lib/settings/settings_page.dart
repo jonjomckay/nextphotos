@@ -1,6 +1,8 @@
+import 'dart:async';
+
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/login/login_page.dart';
@@ -27,24 +29,26 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future onTapPrecacheThumbnails() async {
     var model = context.read<HomeModel>();
-    var cacheManager = DefaultCacheManager();
 
-    var cachePhoto = (String key, Photo photo) async {
+    var headers = {
+      'Authorization': model.authorization,
+      'OCS-APIRequest': 'true'
+    };
+
+    var cached = 0;
+
+    var cachePhoto = (Photo photo) async {
       var uri = generateCacheUri(model.hostname, model.username, photo.id, 256);
+      var key = generateCacheKey(photo.id, 256);
 
-      var stream = cacheManager.getImageFile(uri, key: key, headers: {
-        'Authorization': model.authorization,
-        'OCS-APIRequest': 'true'
-      });
+      var existingFile = await cachedImageExists(uri, cacheKey: key);
+      if (existingFile == false) {
+        await ExtendedNetworkImageProvider(uri, cache: true, cacheKey: key, headers: headers)
+            .getNetworkImageData();
 
-      await for (var result in stream) {
-        if (result is DownloadProgress) {
-          continue;
-        }
+        cached++;
 
-        if (result is FileInfo) {
-          print('Cached ${photo.id}');
-        }
+        print('Cached $key');
       }
     };
 
@@ -52,27 +56,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
     // For each photo, if we don't have it cached, add a future that primes the cached for that given photo ID
     for (var photo in (await model.listPhotoIds())) {
-      var key = generateCacheKey(photo.id, 256);
-
-      var existingFile = await cacheManager.getFileFromCache(key);
-      if (existingFile == null) {
-        futures.add(cachePhoto(key, photo));
-      }
+        futures.add(cachePhoto(photo));
     }
 
-    if (futures.isEmpty) {
+    var start = DateTime.now().millisecondsSinceEpoch;
+
+    await Future.wait(futures);
+
+    var total = DateTime.now().millisecondsSinceEpoch - start;
+
+    if (cached == 0) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('There are no missing thumbnails to precache'),
+        content: Text('There were no missing thumbnails to precache'),
       ));
     } else {
-      var start = DateTime.now().millisecondsSinceEpoch;
-
-      await Future.wait(futures);
-
-      var total = DateTime.now().millisecondsSinceEpoch - start;
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Precached ${futures.length} missing thumbnails in ${total}ms'),
+        content: Text('Precached $cached missing thumbnails in ${total}ms'),
       ));
     }
   }

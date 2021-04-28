@@ -1,8 +1,5 @@
-import 'dart:developer';
-import 'dart:io';
-
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
-import 'package:image_downloader/image_downloader.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
@@ -145,132 +142,47 @@ class FullSizePhoto extends StatefulWidget {
 }
 
 class _FullSizePhotoState extends State<FullSizePhoto> {
-  String? _path;
-  double _progress = 0;
-  bool _hideProgress = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _initialize();
-  }
-
-  Future _initialize() async {
-    ImageDownloader.callback(onProgressUpdate: (imageId, progress) async {
-      // Sometimes the download can stall and the user might close the widget, so cancel the download if so
-      if (this.mounted == false) {
-        await ImageDownloader.cancel();
-      }
-
-      setState(() {
-        _progress = progress / 100;
-      });
-
-      // If the image has finished downloading, wait a bit and then tell the progress bar it can disappear
-      if (progress == 100) {
-        Future.delayed(Duration(milliseconds: 200), () {
-          setState(() {
-            _hideProgress = true;
-          });
-        });
-      }
-    });
-
-    var downloadPath = widget.photo.downloadPath;
-    if (downloadPath == null) {
-      _downloadImage();
-      return;
-    }
-
-    var downloadFile = File(downloadPath);
-    if (downloadFile.existsSync() && downloadFile.lengthSync() > 0) {
-      setState(() {
-        _hideProgress = true;
-        _path = downloadPath;
-        _progress = 1;
-      });
-    } else {
-      _downloadImage();
-    }
-  }
-
-  Future _downloadImage() async {
-    try {
-      var destination = AndroidDestinationType.directoryPictures;
-      destination.inExternalFilesDir();
-
-      var id = await ImageDownloader.downloadImage(
-          'https://${widget.model.hostname}/remote.php/dav${widget.photo.path}',
-          headers: {
-            'Authorization': widget.model.authorization,
-            'OCS-APIRequest': 'true'
-          },
-          destination: destination
-      );
-
-      if (id != null) {
-        var downloadPath = await ImageDownloader.findPath(id);
-
-        await widget.model.setPhotoDownloadPath(widget.photo.id, downloadPath);
-
-        setState(() {
-          _path = downloadPath;
-        });
-      } else {
-        // TODO
-      }
-    } catch (e, stackTrace) {
-      log('Unable to download the full size image', error: e, stackTrace: stackTrace);
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Unable to download the full size image: $e'),
-      ));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    var path = _path;
-
-    Widget child;
-
-    // If file doesn't exist, or is downloading, display the thumbnail
-    if (_progress < 1.0 || path == null) {
-      child = Container(
-        alignment: Alignment.center,
-        color: Colors.black,
-        child: Thumbnail(id: widget.photo.id, model: widget.model, width: double.infinity, fit: BoxFit.contain)
-      );
-    } else {
-      // Otherwise, display the gallery widget
-      child = Image.file(File(path));
-    }
-
-    Widget progress = Container();
-    if (_hideProgress == false) {
-      progress = LinearProgressIndicator(value: _progress);
-    }
-
     return Container(
       color: Colors.black,
-      child: Stack(
-          children: [
-            Center(child: AnimatedSwitcher(
-              reverseDuration: const Duration(milliseconds: 1500),
-              duration: Duration.zero,
-              child: child,
-            )),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 1000),
-                  child: progress,
-                )
-              ],
-            ),
-          ]
+      child: ExtendedImage.network(
+        'https://${widget.model.hostname}/remote.php/dav${widget.photo.path}',
+        headers: {
+          'Authorization': widget.model.authorization,
+          'OCS-APIRequest': 'true'
+        },
+        cache: true,
+        cacheKey: widget.photo.id,
+        mode: ExtendedImageMode.gesture,
+        enableLoadState: true,
+        loadStateChanged: (state) {
+          switch (state.extendedImageLoadState) {
+            case LoadState.loading:
+              return Stack(
+                  children: [
+                    Center(child: AnimatedSwitcher(
+                      reverseDuration: const Duration(milliseconds: 1500),
+                      duration: Duration.zero,
+                      child: Thumbnail(id: widget.photo.id, model: widget.model, width: double.infinity, fit: BoxFit.contain),
+                    )),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 100),
+                          child: LinearProgressIndicator(),
+                        )
+                      ],
+                    ),
+                  ]
+              );
+            case LoadState.completed:
+            case LoadState.failed:
+              // TODO: Failed
+              return state.completedWidget;
+          }
+        },
       ),
     );
   }

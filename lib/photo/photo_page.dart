@@ -1,10 +1,10 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:intl/intl.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/nextcloud/image.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'package:provider/provider.dart';
 
 class PhotoPage extends StatefulWidget {
@@ -45,33 +45,34 @@ class _PhotoPageState extends State<PhotoPage> {
     return Scaffold(
       appBar: AppBar(
         title: Column(
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                  padding: EdgeInsets.all(2),
-                  child: Center(
-                      child: Text(
-                    new DateFormat.yMMMMd().format(_photo.modifiedAt),
-                    textScaleFactor: 0.95,
-                  )))
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              Padding(
-                  padding: EdgeInsets.all(2),
-                  child: Center(
-                      child: Text(
-                    new DateFormat.Hm().format(_photo.modifiedAt),
-                    textScaleFactor: 0.7,
-                  )))
-            ],
-          )
-        ],
-      )),
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Center(
+                        child: Text(
+                      new DateFormat.yMMMMd().format(_photo.modifiedAt),
+                      textScaleFactor: 0.95,
+                    )))
+              ],
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Center(
+                        child: Text(
+                      new DateFormat.Hm().format(_photo.modifiedAt),
+                      textScaleFactor: 0.7,
+                    )))
+              ],
+            )
+          ],
+        )
+      ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -93,43 +94,48 @@ class _PhotoPageState extends State<PhotoPage> {
           ],
         ),
       ),
-      body: Center(
-        child: Consumer<HomeModel>(
-          builder: (context, model, child) {
-            return PhotoViewGallery.builder(
-              scrollPhysics: const BouncingScrollPhysics(),
-              backgroundDecoration: BoxDecoration(
-                color: Colors.transparent,
-              ),
-              pageController: widget.pageController,
-              onPageChanged: onPageChanged,
-              scrollDirection: Axis.horizontal,
-              itemCount: widget.photos.length,
-              builder: (context, index) {
-                return PhotoViewGalleryPageOptions.customChild(
-                    child: FutureBuilder<Photo>(
-                      future: model.getPhoto(widget.photos[index].id),
-                      initialData: widget.photos[index],
-                      builder: (context, snapshot) {
-                        var photo = snapshot.data;
-                        if (photo == null) {
-                          return Container();
-                        }
-
-                        return FullSizePhoto(
-                          model: model,
-                          photo: photo,
-                        );
-                      },
-                    )
-                );
-              },
-            );
-          },
-        )),
+      body: Consumer<HomeModel>(
+        builder: (context, model, child) {
+          return PhotoPageContent(
+            initialIndex: widget.index,
+            model: model,
+            photos: widget.photos,
+            onPageChanged: onPageChanged
+          );
+        },
+      ),
     );
   }
 }
+
+class PhotoPageContent extends StatelessWidget {
+  final int initialIndex;
+  final HomeModel model;
+  final List<Photo> photos;
+  final ValueChanged<int> onPageChanged;
+
+  const PhotoPageContent({Key? key, required this.initialIndex, required this.model, required this.photos, required this.onPageChanged}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ExtendedImageGesturePageView.builder(
+      itemBuilder: (BuildContext context, int index) {
+        var photo = photos[index];
+
+        return FullSizePhoto(model: model, photo: photo);
+      },
+      itemCount: photos.length,
+      onPageChanged: (int index) {
+        onPageChanged(index);
+      },
+      controller: PageController(
+        initialPage: initialIndex
+      ),
+      scrollDirection: Axis.horizontal,
+    );
+  }
+}
+
 
 class FullSizePhoto extends StatefulWidget {
   final HomeModel model;
@@ -154,7 +160,16 @@ class _FullSizePhotoState extends State<FullSizePhoto> {
         },
         cache: true,
         cacheKey: widget.photo.id,
+        enableMemoryCache: true,
+        filterQuality: FilterQuality.high,
         mode: ExtendedImageMode.gesture,
+        initGestureConfigHandler: (state) {
+          return GestureConfig(
+            cacheGesture: true,
+            inPageView: true,
+            initialScale: 1.0
+          );
+        },
         enableLoadState: true,
         loadStateChanged: (state) {
           switch (state.extendedImageLoadState) {

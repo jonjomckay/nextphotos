@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
-import 'package:nextphotos/search/search_page.dart';
+import 'package:nextphotos/search/places_page.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,21 +83,24 @@ class _HomePageState extends State<HomePage> {
               label: 'Favourites'
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search'
+              icon: Icon(Icons.place),
+              label: 'Places'
           )
         ],
       ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) => setState(() {
-          this._currentPage = index;
-        }),
-        children: [
-          LibraryScreen(onRefresh: _onRefresh),
-          FavouritesScreen(onRefresh: _onRefresh),
-          SearchScreen(),
-        ],
+      body: Container(
+        margin: EdgeInsets.symmetric(horizontal: 8),
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (index) => setState(() {
+            this._currentPage = index;
+          }),
+          children: [
+            LibraryScreen(onRefresh: _onRefresh),
+            FavouritesScreen(onRefresh: _onRefresh),
+            PlacesScreen(),
+          ],
+        ),
       ),
     );
   }

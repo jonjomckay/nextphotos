@@ -25,11 +25,13 @@ class Photo {
 class Location {
   final int id;
   final String name;
+  final String? state;
   final double lat;
   final double lng;
   final String coverPhoto;
+  final int numberOfPhotos;
 
-  Location({required this.id, required this.name, required this.lat, required this.lng, required this.coverPhoto});
+  Location({required this.id, required this.name, required this.state, required this.lat, required this.lng, required this.coverPhoto, required this.numberOfPhotos});
 }
 
 class LocationGet {

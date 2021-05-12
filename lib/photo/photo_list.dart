@@ -4,18 +4,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:intl/intl.dart';
+import 'package:nextphotos/dart/extensions.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/nextcloud/image.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
-
-extension Iterables<E> on Iterable<E> {
-  Map<K, List<E>> groupBy<K>(K Function(E) keyFunction) => fold(
-      <K, List<E>>{},
-          (Map<K, List<E>> map, E element) =>
-      map..putIfAbsent(keyFunction(element), () => <E>[]).add(element));
-}
 
 class PhotoList extends StatelessWidget {
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
@@ -75,7 +69,7 @@ class PhotoList extends StatelessWidget {
                       itemBuilder: (BuildContext context, int index) {
                         var photo = photos[index];
 
-                        return Pic(photos, photo, index);
+                        return Pic(items, photo, items.indexOf(photo));
                       })
                 ],
               );

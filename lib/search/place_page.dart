@@ -6,16 +6,16 @@ import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/photo/photo_list.dart';
 import 'package:provider/provider.dart';
 
-class LocationPage extends StatefulWidget {
+class PlacePage extends StatefulWidget {
   final int id;
 
-  const LocationPage({Key? key, required this.id}) : super(key: key);
+  const PlacePage({Key? key, required this.id}) : super(key: key);
 
   @override
-  _LocationPageState createState() => _LocationPageState();
+  _PlacePageState createState() => _PlacePageState();
 }
 
-class _LocationPageState extends State<LocationPage> {
+class _PlacePageState extends State<PlacePage> {
   @override
   Widget build(BuildContext context) {
     return Consumer<HomeModel>(

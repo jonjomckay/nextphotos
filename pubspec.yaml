@@ -31,6 +31,7 @@ dependencies:
   archive: ^3.1.2
   extended_image: ^4.0.0
   geocoder_offline: ^0.2.0
+  input_country: ^2.0.0
   nextcloud: ^3.0.0
   photo_view: ^0.11.1
   pull_to_refresh: ^1.6.4-nullsafety.0

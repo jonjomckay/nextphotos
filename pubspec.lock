@@ -111,6 +111,11 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_localizations:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   flutter_oss_licenses:
     dependency: "direct dev"
     description:
@@ -156,6 +161,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.0.0"
+  input_country:
+    dependency: "direct main"
+    description:
+      name: input_country
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.0"
   intl:
     dependency: "direct main"
     description:

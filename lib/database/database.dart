@@ -30,11 +30,14 @@ class Connection {
       6: [
         SqlMigration('ALTER TABLE photos ADD COLUMN lat REAL NULL'),
         SqlMigration('ALTER TABLE photos ADD COLUMN lng REAL NULL'),
+      ],
+      7: [
+        SqlMigration('ALTER TABLE locations ADD COLUMN state TEXT NULL')
       ]
     });
 
     await openDatabase('nextphotos.db',
-        version: 6,
+        version: 7,
         onUpgrade: myMigrationPlan,
         onCreate: myMigrationPlan,
         onDowngrade: myMigrationPlan

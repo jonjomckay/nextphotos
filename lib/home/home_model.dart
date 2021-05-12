@@ -202,9 +202,9 @@ class HomeModel extends ChangeNotifier {
     notifyListeners();
 
     // // Load the map data for any photos we have
-    // var mapPhotos = await otherClient.photos();
-    //
-    // await updatePhotosWithLocations(mapPhotos);
+    var mapPhotos = await otherClient.photos();
+
+    await updatePhotosWithLocations(mapPhotos);
   }
 
   Future doMapStuff() async {
@@ -284,8 +284,14 @@ class HomeModel extends ChangeNotifier {
         id = await db.insert('locations', {
           'lat': location.latitude,
           'lng': location.longitude,
-          'name': location.featureName
+          'name': location.featureName,
+          'state': location.state
         });
+      } else {
+        await db.update('locations', {
+          'name': location.featureName,
+          'state': location.state
+        }, where: 'id = ?', whereArgs: [id]);
       }
 
       batch.update('photos', {
@@ -308,10 +314,10 @@ class HomeModel extends ChangeNotifier {
   Future<List<Location>> listLocations() async {
     final Database db = await Connection.readOnly();
 
-    var results = await db.rawQuery('SELECT MAX(modified_at), id, name, lat, lng, p_id FROM (SELECT l.id, l.name, l.lat, l.lng, p.id AS p_id, p.modified_at FROM locations l LEFT JOIN photos p ON p.location_id = l.id) GROUP BY id');
+    var results = await db.rawQuery('SELECT MAX(modified_at), id, name, state, lat, lng, p_id, COUNT(modified_at) AS number_of_photos FROM (SELECT l.id, l.name, l.state, l.lat, l.lng, p.id AS p_id, p.modified_at FROM locations l LEFT JOIN photos p ON p.location_id = l.id) GROUP BY id ORDER BY state, name');
 
     return (results)
-        .map((e) => Location(id: e['id'] as int, name: e['name'] as String, lat: e['lat'] as double, lng: e['lng'] as double, coverPhoto: e['p_id'] as String))
+        .map((e) => Location(id: e['id'] as int, name: e['name'] as String, state: e['state'] as String?, lat: e['lat'] as double, lng: e['lng'] as double, coverPhoto: e['p_id'] as String, numberOfPhotos: e['number_of_photos'] as int))
         .toList(growable: false);
   }
 

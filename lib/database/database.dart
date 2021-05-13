@@ -33,11 +33,15 @@ class Connection {
       ],
       7: [
         SqlMigration('ALTER TABLE locations ADD COLUMN state TEXT NULL')
-      ]
+      ],
+      8: [
+        SqlMigration('CREATE TABLE people (id INTEGER PRIMARY KEY, name VARCHAR, thumb_url VARCHAR)', reverseSql: 'DROP TABLE people'),
+        SqlMigration('CREATE TABLE people_photos (person_id INTEGER, photo_id TEXT, PRIMARY KEY (person_id, photo_id), FOREIGN KEY (person_id) REFERENCES people (id) ON DELETE CASCADE, FOREIGN KEY (photo_id) REFERENCES photos (id) ON DELETE CASCADE)', reverseSql: 'DROP TABLE people_photos')
+      ],
     });
 
     await openDatabase('nextphotos.db',
-        version: 7,
+        version: 8,
         onUpgrade: myMigrationPlan,
         onCreate: myMigrationPlan,
         onDowngrade: myMigrationPlan

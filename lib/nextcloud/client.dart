@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:nextcloud/nextcloud.dart';
 import 'package:xml/xml.dart';
 
-import 'map_photo.dart';
+import 'entities.dart';
 
 class CustomClient {
   CustomClient(
@@ -31,13 +31,33 @@ class CustomClient {
     'http://open-collaboration-services.org/ns': 'ocs',
   };
 
-  Future<List<NextcloudMapPhoto>> photos() async {
+  Future<List<NextCloudFacePerson>> facesPeople() async {
+    final response = await _network.send('GET', '$_baseUrl/apps/facerecognition/persons', [200]);
+
+    var result = jsonDecode(response.body)['persons'] as List<dynamic>;
+    
+    return result
+        .map((e) => NextCloudFacePerson.fromJson(e))
+        .toList(growable: false);
+  }
+
+  Future<List<NextCloudFacePersonPhoto>> facesPeoplePhotos(String name) async {
+    final response = await _network.send('GET', '$_baseUrl/apps/facerecognition/person/${Uri.encodeComponent(name)}', [200]);
+
+    var result = jsonDecode(response.body)['images'] as List<dynamic>;
+
+    return result
+        .map((e) => NextCloudFacePersonPhoto.fromJson(e))
+        .toList(growable: false);
+  }
+
+  Future<List<NextCloudMapPhoto>> photos() async {
     final response = await _network.send('GET', '$_baseUrl/apps/maps/photos', [200]);
 
     var result = jsonDecode(response.body) as List<dynamic>;
 
     return result
-        .map((e) => NextcloudMapPhoto.fromJson(e))
+        .map((e) => NextCloudMapPhoto.fromJson(e))
         .toList(growable: false);
   }
 

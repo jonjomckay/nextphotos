@@ -41,3 +41,19 @@ class LocationGet {
 
   LocationGet({required this.id, required this.name, required this.photos});
 }
+
+class Person {
+  final int id;
+  final String name;
+  final String thumbUrl;
+
+  Person({required this.id, required this.name, required this.thumbUrl});
+}
+
+class PersonGet {
+  final int id;
+  final String name;
+  final List<Photo> photos;
+
+  PersonGet({required this.id, required this.name, required this.photos});
+}

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:developer';
 import 'dart:io';
 
@@ -9,15 +8,11 @@ import 'package:http/http.dart' as http;
 import 'package:nextcloud/nextcloud.dart';
 import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/entities.dart';
-import 'package:nextphotos/nextcloud/map_photo.dart';
+import 'package:nextphotos/nextcloud/client.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../nextcloud/client.dart';
-
 class HomeModel extends ChangeNotifier {
-  final List<Photo> _photos = [];
-
   String _hostname = '';
   String _username = '';
   String _password = '';
@@ -27,8 +22,6 @@ class HomeModel extends ChangeNotifier {
   String get username => _username;
   String get password => _password;
   String get authorization => _authorization;
-
-  UnmodifiableListView<Photo> get photos => UnmodifiableListView(_photos);
 
   void setSettings(String hostname, String username, String password, String authorization) {
     _hostname = hostname;
@@ -187,8 +180,6 @@ class HomeModel extends ChangeNotifier {
         hasMore = false;
       }
 
-      onMessage('Synchronised $total photos');
-
       notifyListeners();
     }
 
@@ -201,20 +192,54 @@ class HomeModel extends ChangeNotifier {
 
     notifyListeners();
 
-    // // Load the map data for any photos we have
-    var mapPhotos = await otherClient.photos();
+    // Sync locations, and match them up to any photos we have
+    await syncLocations(otherClient);
 
-    await updatePhotosWithLocations(mapPhotos);
+    // Finally, sync all the face recognition people and photos
+    await syncPeople(otherClient);
+
+    log('Finished syncing');
+  }
+
+  Future syncPeople(CustomClient otherClient) async {
+    var people = await otherClient.facesPeople();
+
+    final Database db = await Connection.writable();
+
+    var batch = db.batch();
+
+    var peopleFutures = people.map((person) async {
+      var id = int.parse(Uri(path: person.thumbUrl).pathSegments[3]);
+
+      batch.insert('people', {
+        'id': id,
+        'name': person.name,
+        'thumb_url': 'https://$_hostname${person.thumbUrl}'
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+
+      var photos = await otherClient.facesPeoplePhotos(person.name);
+      for (var photo in photos) {
+        var photoId = Uri.parse(photo.thumbUrl).queryParameters['fileId'];
+
+        batch.insert('people_photos', {
+          'person_id': id,
+          'photo_id': photoId,
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+
+      log('Inserted face for ${person.name}');
+    });
+
+    await Future.wait(peopleFutures);
+
+    await batch.commit();
   }
 
   Future doMapStuff() async {
     var otherClient = CustomClient('https://$_hostname', _username, _password);
 
-
     // Load the map data for any photos we have
-    var mapPhotos = await otherClient.photos();
-
-    await updatePhotosWithLocations(mapPhotos);
+    await syncLocations(otherClient);
   }
 
   Future<File> _downloadFile(String url, String filename) async {
@@ -231,7 +256,7 @@ class HomeModel extends ChangeNotifier {
     return file;
   }
 
-  Future<void> updatePhotosWithLocations(List<NextcloudMapPhoto> photos) async {
+  Future<void> syncLocations(CustomClient otherClient) async {
     final Database db = await Connection.writable();
 
     var download = await _downloadFile('https://download.geonames.org/export/dump/cities500.zip', 'cities500.zip');
@@ -273,6 +298,8 @@ class HomeModel extends ChangeNotifier {
     log('Geocoder has been initialized');
 
     Batch batch = db.batch();
+
+    var photos = await otherClient.photos();
 
     for (var photo in photos) {
       var locations = geocoder.search(photo.lat, photo.lng);
@@ -321,6 +348,16 @@ class HomeModel extends ChangeNotifier {
         .toList(growable: false);
   }
 
+  Future<List<Person>> listPeople() async {
+    final Database db = await Connection.readOnly();
+
+    var results = await db.rawQuery('SELECT id, name, thumb_url FROM people ORDER BY name');
+
+    return (results)
+        .map((e) => Person(id: e['id'] as int, name: e['name'] as String, thumbUrl: e['thumb_url'] as String))
+        .toList(growable: false);
+  }
+
   Future<LocationGet> getLocation(int id) async {
     final Database db = await Connection.readOnly();
 
@@ -330,6 +367,18 @@ class HomeModel extends ChangeNotifier {
 
     return (await db.query('locations', where: 'id = ?', whereArgs: [id]))
         .map((e) => LocationGet(id: e['id'] as int, name: e['name'] as String, photos: photos))
+        .first;
+  }
+
+  Future<PersonGet> getPerson(int id) async {
+    final Database db = await Connection.readOnly();
+
+    var photos = (await db.query('photos', where: 'id IN (SELECT photo_id FROM people_photos WHERE person_id = ?)', whereArgs: [id], orderBy: 'modified_at DESC'))
+        .map((e) => _mapToPhoto(e))
+        .toList(growable: false);
+
+    return (await db.query('people', where: 'id = ?', whereArgs: [id]))
+        .map((e) => PersonGet(id: e['id'] as int, name: e['name'] as String, photos: photos))
         .first;
   }
 }

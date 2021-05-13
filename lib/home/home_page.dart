@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
+import 'package:nextphotos/search/people_page.dart';
 import 'package:nextphotos/search/places_page.dart';
 import 'package:nextphotos/settings/settings_page.dart';
 import 'package:provider/provider.dart';
@@ -85,7 +86,11 @@ class _HomePageState extends State<HomePage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.place),
               label: 'Places'
-          )
+          ),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.people),
+              label: 'People'
+          ),
         ],
       ),
       body: Container(
@@ -99,6 +104,7 @@ class _HomePageState extends State<HomePage> {
             LibraryScreen(onRefresh: _onRefresh),
             FavouritesScreen(onRefresh: _onRefresh),
             PlacesScreen(),
+            PeopleScreen(),
           ],
         ),
       ),

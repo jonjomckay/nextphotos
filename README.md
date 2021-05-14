@@ -1,16 +1,14 @@
-# nextphotos
+Nextphotos
+==========
 
-A new Flutter application.
+A privacy-friendy mobile app for Nextcloud Photos.
 
-## Getting Started
+> **Warning:** This app is in development, and has only happy paths implemented so far!
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+* Timeline view
+* Location view
+  * Depends on [Maps](https://apps.nextcloud.com/apps/maps) being installed
+* People view
+  * Depends on [Face Recognition](https://apps.nextcloud.com/apps/facerecognition) being installed

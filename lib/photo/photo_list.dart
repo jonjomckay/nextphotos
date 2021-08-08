@@ -3,11 +3,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:intl/intl.dart';
-import 'package:nextphotos/dart/extensions.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/nextcloud/image.dart';
+import 'package:nextphotos/ui/draggable_scrollbar.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -42,41 +43,67 @@ class PhotoList extends StatelessWidget {
             return Center(child: CircularProgressIndicator());
           }
 
-          var groups = items.groupBy((e) => dateFormat.format(e.modifiedAt));
-          var titles = groups.keys.toList(growable: false);
+          List<PhotoOrDate> photos = [];
 
-          return ListView.builder(
-            itemCount: groups.length,
-            itemBuilder: (context, index) {
-              var title = titles[index];
-              var photos = groups[title]!;
+          for (int i = 0; i < items.length; i++) {
+            var prevPhoto = i == 0 ? null : items[i - 1];
+            var thisPhoto = items[i];
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-                    child: Text(title, style: TextStyle(
+            // If this is the first photo, add the date separator first
+            if (i == 0) {
+              photos.add(PhotoOrDate(null, thisPhoto.modifiedAt));
+            }
+
+            // If this and the previous photo are from different days, add the date separator
+            if (prevPhoto != null && prevPhoto.modifiedAt.day != thisPhoto.modifiedAt.day) {
+              photos.add(PhotoOrDate(null, thisPhoto.modifiedAt));
+            }
+
+            photos.add(PhotoOrDate(thisPhoto, null));
+          }
+
+          return DraggableScrollbar.semicircle(
+            controller: _scrollController,
+            child: StaggeredGridView.countBuilder(
+              addAutomaticKeepAlives: false,
+              crossAxisCount: 4,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
+              controller: _scrollController,
+              itemCount: photos.length,
+              itemBuilder: (context, index) {
+                var photoOrDate = photos[index];
+                if (photoOrDate.photo != null) {
+                  return Pic(items, photoOrDate.photo!, index);
+                }
+
+                return Container(
+                  alignment: Alignment.centerLeft,
+                  child: Text(dateFormat.format(photoOrDate.date!), style: TextStyle(
                       fontWeight: FontWeight.bold
-                    )),
-                  ),
-                  GridView.builder(
-                      shrinkWrap: true,
-                      controller: _scrollController,
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                          maxCrossAxisExtent: 128, crossAxisSpacing: 4, mainAxisSpacing: 4),
-                      itemCount: photos.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        var photo = photos[index];
+                  )),
+                );
+              },
+              staggeredTileBuilder: (index) {
+                var photoOrDate = photos[index];
+                if (photoOrDate.photo != null) {
+                  return StaggeredTile.extent(1, 128);
+                }
 
-                        return Pic(items, photo, items.indexOf(photo));
-                      })
-                ],
-              );
-            },
+                return StaggeredTile.extent(4, 48);
+              },
+            ),
           );
+
         },
       );
     });
   }
+}
+
+class PhotoOrDate {
+  final Photo? photo;
+  final DateTime? date;
+
+  PhotoOrDate(this.photo, this.date);
 }

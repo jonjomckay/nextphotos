@@ -196,7 +196,11 @@ class HomeModel extends ChangeNotifier {
     await syncLocations(otherClient);
 
     // Finally, sync all the face recognition people and photos
-    await syncPeople(otherClient);
+    try {
+      await syncPeople(otherClient);
+    } catch (e, stackTrace) {
+      log('Unable to sync people', error: e, stackTrace: stackTrace);
+    }
 
     log('Finished syncing');
   }

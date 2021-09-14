@@ -3,13 +3,11 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/library/favourites_screen.dart';
 import 'package:nextphotos/library/library_screen.dart';
 import 'package:nextphotos/search/people_page.dart';
 import 'package:nextphotos/search/places_page.dart';
 import 'package:nextphotos/settings/settings_page.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -23,7 +21,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController();
-  Future<SharedPreferences> _preferences = SharedPreferences.getInstance();
 
   int _currentPage = 0;
 
@@ -31,17 +28,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    _preferences.then((prefs) {
-      var model = context.read<HomeModel>();
-
-      model.setSettings(
-          prefs.getString('nextcloud.hostname')!,
-          prefs.getString('nextcloud.username')!,
-          prefs.getString('nextcloud.appPassword')!,
-          prefs.getString('nextcloud.authorizationHeader')!
-      );
-
-      model.refreshPhotos(_onRefresh);
+    SharedPreferences.getInstance().then((prefs) {
+      context.read<HomeModel>().refreshPhotos(_onRefresh);
     });
   }
 

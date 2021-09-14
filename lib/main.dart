@@ -14,17 +14,26 @@ void main() async {
   Connection connection = Connection();
   connection.migrate();
 
+  HomeModel homeModel = HomeModel();
+
   Widget child;
 
   var prefs = await SharedPreferences.getInstance();
   if (prefs.containsKey('nextcloud.appPassword')) {
     child = HomePage();
+
+    homeModel.setSettings(
+        prefs.getString('nextcloud.hostname')!,
+        prefs.getString('nextcloud.username')!,
+        prefs.getString('nextcloud.appPassword')!,
+        prefs.getString('nextcloud.authorizationHeader')!
+    );
   } else {
     child = LoginPage();
   }
 
   runApp(ChangeNotifierProvider(
-    create: (context) => HomeModel(),
+    create: (context) => homeModel,
     child: RefreshConfiguration(
       enableScrollWhenRefreshCompleted: true,
       child: MyApp(child),

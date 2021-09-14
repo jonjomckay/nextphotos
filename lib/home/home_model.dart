@@ -10,6 +10,7 @@ import 'package:nextphotos/database/database.dart';
 import 'package:nextphotos/database/entities.dart';
 import 'package:nextphotos/nextcloud/client.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:photo_manager/photo_manager.dart';
 import 'package:sqflite/sqflite.dart';
 
 class HomeModel extends ChangeNotifier {
@@ -384,5 +385,31 @@ class HomeModel extends ChangeNotifier {
     return (await db.query('people', where: 'id = ?', whereArgs: [id]))
         .map((e) => PersonGet(id: e['id'] as int, name: e['name'] as String, photos: photos))
         .first;
+  }
+
+  Future uploadPhoto(AssetEntity item) async {
+    try {
+      var file = await item.file;
+      if (file == null) {
+        return;
+      }
+
+      var name = await item.titleAsync;
+      var path = '/test/$name';
+      var time = '${(item.modifiedDateTime.millisecondsSinceEpoch / 1000).round()}';
+
+      log('About to upload $name');
+
+      // var client = NextCloudClient.withCredentials(Uri.parse('https://$_hostname'), _username, _password, defaultHeaders: {
+      //   'X-OC-Mtime': time
+      // });
+      //
+      // await client.webDav.upload(await file.readAsBytes(), path);
+
+      log('Finished uploading $name');
+    } catch (e, stackTrace) {
+      log('Unable to upload the photo ${item.id}', error: e, stackTrace: stackTrace);
+      throw e;
+    }
   }
 }

@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nextphotos/database/entities.dart';
+import 'package:nextphotos/gallery/gallery_page.dart';
 import 'package:nextphotos/home/home_model.dart';
 import 'package:nextphotos/login/login_page.dart';
 import 'package:nextphotos/nextcloud/image.dart';
@@ -82,6 +84,16 @@ class _SettingsPageState extends State<SettingsPage> {
     await model.doMapStuff();
   }
 
+  Future onTapRefreshLibrary() async {
+    var model = context.read<HomeModel>();
+
+    model.refreshPhotos((message) => log(message));
+  }
+
+  Future onTapGallery() async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => GalleryPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,6 +109,12 @@ class _SettingsPageState extends State<SettingsPage> {
             onTap: onTapLogout,
           ),
           ListTile(
+            title: Text('Refresh library'),
+            subtitle: Text(''),
+            leading: const Icon(Icons.refresh),
+            onTap: onTapRefreshLibrary,
+          ),
+          ListTile(
             title: Text('Precache thumbnails'),
             subtitle: Text('Download thumbnails for your entire library'),
             leading: const Icon(Icons.cloud_download),
@@ -107,6 +125,11 @@ class _SettingsPageState extends State<SettingsPage> {
             subtitle: Text('Do map stuff'),
             leading: const Icon(Icons.map),
             onTap: onTapMapStuff,
+          ),
+          ListTile(
+            title: Text('Gallery'),
+            leading: const Icon(Icons.photo),
+            onTap: onTapGallery,
           )
         ],
       ),

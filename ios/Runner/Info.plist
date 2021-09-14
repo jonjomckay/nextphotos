@@ -42,7 +42,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Photos are downloaded into your camera roll</string>
+	<string>Photos can be synced to Nextcloud from your camera roll</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Photos are downloaded into your camera roll</string>
 </dict>

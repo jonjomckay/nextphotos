@@ -29,7 +29,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     SharedPreferences.getInstance().then((prefs) {
-      context.read<HomeModel>().refreshPhotos(_onRefresh);
+      // context.read<HomeModel>().refreshPhotos(_onRefresh);
     });
   }
 
